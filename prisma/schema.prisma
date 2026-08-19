@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum InterestFrequency {
+  MONTHLY
+  YEARLY
+  CUSTOM_DATE_RANGE
+}
+
+enum InterestValueType {
+  PERCENTAGE
+  RUPEES
+}
+
+enum LoanStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum PaymentStatus {
+  COMPLETED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum ExcessStatus {
+  AVAILABLE
+  APPLIED
+  REFUNDED
+}
+
+model Borrower {
+  id        String   @id @default(uuid())
+  fullName  String
+  phone     String   @unique
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loans     Loan[]
+  payments  Payment[]
+  excesses  ExcessBalance[]
+}
+
+model Loan {
+  id                  String              @id @default(uuid())
+  borrowerId          String
+
+  principalAmount     Decimal             @db.Decimal(15, 2)
+
+  interestFrequency   InterestFrequency
+  interestValueType   InterestValueType
+  interestRate        Decimal             @db.Decimal(15, 2)
+
+  startDate           DateTime
+  endDate             DateTime?
+
+  status              LoanStatus          @default(ACTIVE)
+
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  borrower            Borrower            @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  allocations         PaymentAllocation[]
+}
+
+model Payment {
+  id             String          @id @default(uuid())
+  borrowerId     String
+
+  amount         Decimal         @db.Decimal(15, 2)
+  paymentDate    DateTime        @default(now())
+  status         PaymentStatus   @default(COMPLETED)
+  notes          String?
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  borrower       Borrower        @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  allocations    PaymentAllocation[]
+  excesses       ExcessBalance[]
+}
+
+model PaymentAllocation {
+  id             String   @id @default(uuid())
+  paymentId      String
+  loanId         String
+
+  amount         Decimal  @db.Decimal(15, 2)
+
+  periodStart    DateTime?
+  periodEnd      DateTime?
+
+  createdAt      DateTime @default(now())
+
+  payment        Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  loan           Loan     @relation(fields: [loanId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+  @@index([loanId])
+}
+
+model ExcessBalance {
+  id             String       @id @default(uuid())
+  borrowerId     String
+  paymentId      String
+
+  amount         Decimal      @db.Decimal(15, 2)
+  status         ExcessStatus @default(AVAILABLE)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  borrower       Borrower     @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  payment        Payment      @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([borrowerId])
+  @@index([paymentId])
+}

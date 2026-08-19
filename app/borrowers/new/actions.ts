@@ -1,0 +1,113 @@
+"use server";
+
+import { redirect } from "next/navigation";
+
+import { prisma } from "@/lib/db/prisma";
+
+export async function createBorrowerWithLoan(
+  formData: FormData
+) {
+  const fullName = String(
+    formData.get("fullName") || ""
+  ).trim();
+
+  const phone = String(
+    formData.get("phone") || ""
+  ).trim();
+
+  const addressValue = String(
+    formData.get("address") || ""
+  ).trim();
+
+  const principalAmount = Number(
+    formData.get("principalAmount")
+  );
+
+  const interestFrequency = String(
+    formData.get("interestFrequency")
+  );
+
+  const interestValueType = String(
+    formData.get("interestValueType")
+  );
+
+  const interestRate = Number(
+    formData.get("interestRate")
+  );
+
+  const startDateValue = String(
+    formData.get("startDate") || ""
+  );
+
+  const endDateValue = String(
+    formData.get("endDate") || ""
+  );
+
+  if (!fullName || !phone) {
+    throw new Error(
+      "Borrower name and phone number are required."
+    );
+  }
+
+  if (
+    !Number.isFinite(principalAmount) ||
+    principalAmount <= 0
+  ) {
+    throw new Error(
+      "Principal amount must be greater than zero."
+    );
+  }
+
+  if (
+    !Number.isFinite(interestRate) ||
+    interestRate < 0
+  ) {
+    throw new Error(
+      "Enter a valid interest rate."
+    );
+  }
+
+  if (!startDateValue) {
+    throw new Error(
+      "Loan start date is required."
+    );
+  }
+
+  const borrower = await prisma.borrower.create({
+    data: {
+      fullName,
+      phone,
+      address: addressValue || null,
+
+      loans: {
+        create: {
+          principalAmount,
+          interestRate,
+
+          interestFrequency:
+            interestFrequency as
+              | "MONTHLY"
+              | "YEARLY"
+              | "CUSTOM_DATE_RANGE",
+
+          interestValueType:
+            interestValueType as
+              | "PERCENTAGE"
+              | "RUPEES",
+
+          startDate: new Date(
+            `${startDateValue}T00:00:00`
+          ),
+
+          endDate: endDateValue
+            ? new Date(
+                `${endDateValue}T00:00:00`
+              )
+            : null,
+        },
+      },
+    },
+  });
+
+  redirect(`/borrowers/${borrower.id}`);
+}

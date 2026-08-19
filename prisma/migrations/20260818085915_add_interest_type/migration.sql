@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Loan" ADD COLUMN     "interestType" TEXT NOT NULL DEFAULT 'DATE_RANGE';
