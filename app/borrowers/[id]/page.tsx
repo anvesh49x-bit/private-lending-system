@@ -28,6 +28,10 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
+function roundMoney(value: number) {
+  return Number(value.toFixed(2));
+}
+
 function getInterestRule(
   rate: number,
   valueType: string,
@@ -62,6 +66,9 @@ export default async function BorrowerDetailsPage({
         orderBy: {
           createdAt: "desc",
         },
+        include: {
+          allocations: true,
+        },
       },
       payments: {
         orderBy: {
@@ -75,26 +82,90 @@ export default async function BorrowerDetailsPage({
     notFound();
   }
 
+  /*
+   * Calculate the REAL current position of every loan.
+   *
+   * We use payment allocations, not just the original
+   * loan principal.
+   */
   const loanDetails = borrower.loans.map((loan) => {
+    const originalPrincipal = Number(
+      loan.principalAmount
+    );
+
+    const principalPaid = roundMoney(
+      loan.allocations.reduce(
+        (total, allocation) =>
+          total + Number(allocation.principalAmount),
+        0
+      )
+    );
+
+    const interestPaid = roundMoney(
+      loan.allocations.reduce(
+        (total, allocation) =>
+          total + Number(allocation.interestAmount),
+        0
+      )
+    );
+
+    const remainingPrincipal = roundMoney(
+      Math.max(
+        0,
+        originalPrincipal - principalPaid
+      )
+    );
+
+    /*
+     * Calculate interest using the current remaining
+     * principal.
+     */
     const calculation =
-      calculateEstimatedInterest({
-        principalAmount: Number(
-          loan.principalAmount
-        ),
-        interestRate: Number(loan.interestRate),
-        interestFrequency: loan.interestFrequency,
-        interestValueType: loan.interestValueType,
-        startDate: loan.startDate,
-        endDate: loan.endDate,
-      });
+      remainingPrincipal > 0
+        ? calculateEstimatedInterest({
+            principalAmount: remainingPrincipal,
+            interestRate: Number(
+              loan.interestRate
+            ),
+            interestFrequency:
+              loan.interestFrequency,
+            interestValueType:
+              loan.interestValueType,
+            startDate: loan.startDate,
+            endDate: loan.endDate,
+          })
+        : {
+            estimatedInterest: 0,
+            totalDue: 0,
+            daysElapsed: 0,
+          };
+
+    const accruedInterest = roundMoney(
+      calculation.estimatedInterest
+    );
+
+    const remainingInterest = roundMoney(
+      Math.max(
+        0,
+        accruedInterest - interestPaid
+      )
+    );
+
+    const totalDue = roundMoney(
+      remainingPrincipal + remainingInterest
+    );
 
     return {
       ...loan,
-      principalAmount: Number(
-        loan.principalAmount
-      ),
-      interestRate: Number(loan.interestRate),
-      ...calculation,
+      originalPrincipal,
+      principalPaid,
+      remainingPrincipal,
+      accruedInterest,
+      interestPaid,
+      remainingInterest,
+      totalDue,
+      daysElapsed: calculation.daysElapsed,
+      estimatedInterest: accruedInterest,
     };
   });
 
@@ -102,27 +173,36 @@ export default async function BorrowerDetailsPage({
     (loan) => loan.status === "ACTIVE"
   );
 
-  const activePrincipal = activeLoans.reduce(
-    (total, loan) =>
-      total + loan.principalAmount,
-    0
+  /*
+   * Account summary uses the REAL remaining amounts.
+   */
+  const activePrincipal = roundMoney(
+    activeLoans.reduce(
+      (total, loan) =>
+        total + loan.remainingPrincipal,
+      0
+    )
   );
 
-  const interestTillToday = activeLoans.reduce(
-    (total, loan) =>
-      total + loan.estimatedInterest,
-    0
+  const interestTillToday = roundMoney(
+    activeLoans.reduce(
+      (total, loan) =>
+        total + loan.remainingInterest,
+      0
+    )
   );
 
-  const totalMoneyReceived =
+  const totalMoneyReceived = roundMoney(
     borrower.payments.reduce(
       (total, payment) =>
         total + Number(payment.amount),
       0
-    );
+    )
+  );
 
-  const totalDue =
-    activePrincipal + interestTillToday;
+  const totalDue = roundMoney(
+    activePrincipal + interestTillToday
+  );
 
   return (
     <AppShell>
@@ -176,13 +256,13 @@ export default async function BorrowerDetailsPage({
           </h2>
 
           <p className="mt-1 text-sm text-zinc-500">
-            The most important amounts as of today.
+            Live outstanding amounts after recorded payments.
           </p>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-medium text-zinc-500">
-                Principal Currently Active
+                Principal Remaining
               </p>
 
               <p className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
@@ -190,13 +270,13 @@ export default async function BorrowerDetailsPage({
               </p>
 
               <p className="mt-3 text-sm text-zinc-500">
-                Money currently with borrower
+                Money still with borrower
               </p>
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-medium text-zinc-500">
-                Interest Till Today
+                Interest Remaining
               </p>
 
               <p className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
@@ -204,7 +284,7 @@ export default async function BorrowerDetailsPage({
               </p>
 
               <p className="mt-3 text-sm text-zinc-500">
-                Automatically estimated
+                Interest due after payments
               </p>
             </div>
 
@@ -218,13 +298,13 @@ export default async function BorrowerDetailsPage({
               </p>
 
               <p className="mt-3 text-sm text-zinc-500">
-                Payments recorded so far
+                All payments recorded so far
               </p>
             </div>
 
             <div className="rounded-2xl bg-zinc-950 p-6 text-white shadow-sm">
               <p className="text-sm font-medium text-zinc-400">
-                Estimated Total Due Today
+                Total Outstanding Today
               </p>
 
               <p className="mt-4 text-3xl font-semibold tracking-tight">
@@ -232,7 +312,7 @@ export default async function BorrowerDetailsPage({
               </p>
 
               <p className="mt-3 text-sm text-zinc-400">
-                Principal + accumulated interest
+                Remaining principal + remaining interest
               </p>
             </div>
           </div>
@@ -246,7 +326,7 @@ export default async function BorrowerDetailsPage({
               </h2>
 
               <p className="mt-1 text-sm text-zinc-500">
-                Each loan is calculated automatically up to today.
+                Original loan, payments applied, and current outstanding balance.
               </p>
             </div>
 
@@ -296,63 +376,103 @@ export default async function BorrowerDetailsPage({
                       </p>
                     </div>
 
-                    <p className="text-sm font-medium text-zinc-600">
-                      {getInterestRule(
-                        loan.interestRate,
-                        loan.interestValueType,
-                        loan.interestFrequency
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="grid divide-y divide-zinc-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
-                    <div className="p-6">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                        Principal Given
-                      </p>
-
-                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
-                        {formatCurrency(
-                          loan.principalAmount
-                        )}
-                      </p>
-                    </div>
-
-                    <div className="p-6">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                        Interest Till Today
-                      </p>
-
-                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
-                        {formatCurrency(
-                          loan.estimatedInterest
-                        )}
-                      </p>
-                    </div>
-
-                    <div className="p-6">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                        Total Due Today
-                      </p>
-
-                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
-                        {formatCurrency(
-                          loan.totalDue
-                        )}
-                      </p>
-                    </div>
-
-                    <div className="p-6">
+                    <div className="rounded-xl bg-zinc-50 px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
                         Interest Rule
                       </p>
 
-                      <p className="mt-3 text-base font-semibold text-zinc-950">
+                      <p className="mt-1 text-sm font-semibold text-zinc-950">
                         {getInterestRule(
-                          loan.interestRate,
+                          Number(loan.interestRate),
                           loan.interestValueType,
                           loan.interestFrequency
                         )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid divide-y divide-zinc-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-3">
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Original Principal
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
+                        {formatCurrency(
+                          loan.originalPrincipal
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Principal Paid
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-green-700">
+                        {formatCurrency(
+                          loan.principalPaid
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Principal Remaining
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
+                        {formatCurrency(
+                          loan.remainingPrincipal
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Interest Accrued
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
+                        {formatCurrency(
+                          loan.accruedInterest
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Interest Paid
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-green-700">
+                        {formatCurrency(
+                          loan.interestPaid
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="p-6">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                        Interest Remaining
+                      </p>
+
+                      <p className="mt-3 text-2xl font-semibold text-zinc-950">
+                        {formatCurrency(
+                          loan.remainingInterest
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-zinc-100 bg-zinc-950 px-6 py-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm font-medium text-zinc-400">
+                        Total Outstanding Today
+                      </p>
+
+                      <p className="text-3xl font-semibold text-white">
+                        {formatCurrency(loan.totalDue)}
                       </p>
                     </div>
                   </div>

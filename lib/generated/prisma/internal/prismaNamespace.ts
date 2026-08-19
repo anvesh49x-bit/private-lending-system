@@ -878,6 +878,8 @@ export const PaymentAllocationScalarFieldEnum = {
   paymentId: 'paymentId',
   loanId: 'loanId',
   amount: 'amount',
+  interestAmount: 'interestAmount',
+  principalAmount: 'principalAmount',
   periodStart: 'periodStart',
   periodEnd: 'periodEnd',
   createdAt: 'createdAt'

@@ -28,10 +28,14 @@ export type AggregatePaymentAllocation = {
 
 export type PaymentAllocationAvgAggregateOutputType = {
   amount: runtime.Decimal | null
+  interestAmount: runtime.Decimal | null
+  principalAmount: runtime.Decimal | null
 }
 
 export type PaymentAllocationSumAggregateOutputType = {
   amount: runtime.Decimal | null
+  interestAmount: runtime.Decimal | null
+  principalAmount: runtime.Decimal | null
 }
 
 export type PaymentAllocationMinAggregateOutputType = {
@@ -39,6 +43,8 @@ export type PaymentAllocationMinAggregateOutputType = {
   paymentId: string | null
   loanId: string | null
   amount: runtime.Decimal | null
+  interestAmount: runtime.Decimal | null
+  principalAmount: runtime.Decimal | null
   periodStart: Date | null
   periodEnd: Date | null
   createdAt: Date | null
@@ -49,6 +55,8 @@ export type PaymentAllocationMaxAggregateOutputType = {
   paymentId: string | null
   loanId: string | null
   amount: runtime.Decimal | null
+  interestAmount: runtime.Decimal | null
+  principalAmount: runtime.Decimal | null
   periodStart: Date | null
   periodEnd: Date | null
   createdAt: Date | null
@@ -59,6 +67,8 @@ export type PaymentAllocationCountAggregateOutputType = {
   paymentId: number
   loanId: number
   amount: number
+  interestAmount: number
+  principalAmount: number
   periodStart: number
   periodEnd: number
   createdAt: number
@@ -68,10 +78,14 @@ export type PaymentAllocationCountAggregateOutputType = {
 
 export type PaymentAllocationAvgAggregateInputType = {
   amount?: true
+  interestAmount?: true
+  principalAmount?: true
 }
 
 export type PaymentAllocationSumAggregateInputType = {
   amount?: true
+  interestAmount?: true
+  principalAmount?: true
 }
 
 export type PaymentAllocationMinAggregateInputType = {
@@ -79,6 +93,8 @@ export type PaymentAllocationMinAggregateInputType = {
   paymentId?: true
   loanId?: true
   amount?: true
+  interestAmount?: true
+  principalAmount?: true
   periodStart?: true
   periodEnd?: true
   createdAt?: true
@@ -89,6 +105,8 @@ export type PaymentAllocationMaxAggregateInputType = {
   paymentId?: true
   loanId?: true
   amount?: true
+  interestAmount?: true
+  principalAmount?: true
   periodStart?: true
   periodEnd?: true
   createdAt?: true
@@ -99,6 +117,8 @@ export type PaymentAllocationCountAggregateInputType = {
   paymentId?: true
   loanId?: true
   amount?: true
+  interestAmount?: true
+  principalAmount?: true
   periodStart?: true
   periodEnd?: true
   createdAt?: true
@@ -196,6 +216,8 @@ export type PaymentAllocationGroupByOutputType = {
   paymentId: string
   loanId: string
   amount: runtime.Decimal
+  interestAmount: runtime.Decimal
+  principalAmount: runtime.Decimal
   periodStart: Date | null
   periodEnd: Date | null
   createdAt: Date
@@ -229,6 +251,8 @@ export type PaymentAllocationWhereInput = {
   paymentId?: Prisma.StringFilter<"PaymentAllocation"> | string
   loanId?: Prisma.StringFilter<"PaymentAllocation"> | string
   amount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   periodEnd?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentAllocation"> | Date | string
@@ -241,6 +265,8 @@ export type PaymentAllocationOrderByWithRelationInput = {
   paymentId?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
   periodStart?: Prisma.SortOrderInput | Prisma.SortOrder
   periodEnd?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -256,6 +282,8 @@ export type PaymentAllocationWhereUniqueInput = Prisma.AtLeast<{
   paymentId?: Prisma.StringFilter<"PaymentAllocation"> | string
   loanId?: Prisma.StringFilter<"PaymentAllocation"> | string
   amount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   periodEnd?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentAllocation"> | Date | string
@@ -268,6 +296,8 @@ export type PaymentAllocationOrderByWithAggregationInput = {
   paymentId?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
   periodStart?: Prisma.SortOrderInput | Prisma.SortOrder
   periodEnd?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -286,6 +316,8 @@ export type PaymentAllocationScalarWhereWithAggregatesInput = {
   paymentId?: Prisma.StringWithAggregatesFilter<"PaymentAllocation"> | string
   loanId?: Prisma.StringWithAggregatesFilter<"PaymentAllocation"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalWithAggregatesFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalWithAggregatesFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.DateTimeNullableWithAggregatesFilter<"PaymentAllocation"> | Date | string | null
   periodEnd?: Prisma.DateTimeNullableWithAggregatesFilter<"PaymentAllocation"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentAllocation"> | Date | string
@@ -294,6 +326,8 @@ export type PaymentAllocationScalarWhereWithAggregatesInput = {
 export type PaymentAllocationCreateInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -306,6 +340,8 @@ export type PaymentAllocationUncheckedCreateInput = {
   paymentId: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -314,6 +350,8 @@ export type PaymentAllocationUncheckedCreateInput = {
 export type PaymentAllocationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -326,6 +364,8 @@ export type PaymentAllocationUncheckedUpdateInput = {
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -336,6 +376,8 @@ export type PaymentAllocationCreateManyInput = {
   paymentId: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -344,6 +386,8 @@ export type PaymentAllocationCreateManyInput = {
 export type PaymentAllocationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -354,6 +398,8 @@ export type PaymentAllocationUncheckedUpdateManyInput = {
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -374,6 +420,8 @@ export type PaymentAllocationCountOrderByAggregateInput = {
   paymentId?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
   periodStart?: Prisma.SortOrder
   periodEnd?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -381,6 +429,8 @@ export type PaymentAllocationCountOrderByAggregateInput = {
 
 export type PaymentAllocationAvgOrderByAggregateInput = {
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
 }
 
 export type PaymentAllocationMaxOrderByAggregateInput = {
@@ -388,6 +438,8 @@ export type PaymentAllocationMaxOrderByAggregateInput = {
   paymentId?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
   periodStart?: Prisma.SortOrder
   periodEnd?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -398,6 +450,8 @@ export type PaymentAllocationMinOrderByAggregateInput = {
   paymentId?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
   periodStart?: Prisma.SortOrder
   periodEnd?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -405,6 +459,8 @@ export type PaymentAllocationMinOrderByAggregateInput = {
 
 export type PaymentAllocationSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
+  interestAmount?: Prisma.SortOrder
+  principalAmount?: Prisma.SortOrder
 }
 
 export type PaymentAllocationCreateNestedManyWithoutLoanInput = {
@@ -494,6 +550,8 @@ export type PaymentAllocationUncheckedUpdateManyWithoutPaymentNestedInput = {
 export type PaymentAllocationCreateWithoutLoanInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -504,6 +562,8 @@ export type PaymentAllocationUncheckedCreateWithoutLoanInput = {
   id?: string
   paymentId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -543,6 +603,8 @@ export type PaymentAllocationScalarWhereInput = {
   paymentId?: Prisma.StringFilter<"PaymentAllocation"> | string
   loanId?: Prisma.StringFilter<"PaymentAllocation"> | string
   amount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFilter<"PaymentAllocation"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   periodEnd?: Prisma.DateTimeNullableFilter<"PaymentAllocation"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentAllocation"> | Date | string
@@ -551,6 +613,8 @@ export type PaymentAllocationScalarWhereInput = {
 export type PaymentAllocationCreateWithoutPaymentInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -561,6 +625,8 @@ export type PaymentAllocationUncheckedCreateWithoutPaymentInput = {
   id?: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -596,6 +662,8 @@ export type PaymentAllocationCreateManyLoanInput = {
   id?: string
   paymentId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -604,6 +672,8 @@ export type PaymentAllocationCreateManyLoanInput = {
 export type PaymentAllocationUpdateWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -614,6 +684,8 @@ export type PaymentAllocationUncheckedUpdateWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -623,6 +695,8 @@ export type PaymentAllocationUncheckedUpdateManyWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   paymentId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -632,6 +706,8 @@ export type PaymentAllocationCreateManyPaymentInput = {
   id?: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -640,6 +716,8 @@ export type PaymentAllocationCreateManyPaymentInput = {
 export type PaymentAllocationUpdateWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -650,6 +728,8 @@ export type PaymentAllocationUncheckedUpdateWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -659,6 +739,8 @@ export type PaymentAllocationUncheckedUpdateManyWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   periodEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -671,6 +753,8 @@ export type PaymentAllocationSelect<ExtArgs extends runtime.Types.Extensions.Int
   paymentId?: boolean
   loanId?: boolean
   amount?: boolean
+  interestAmount?: boolean
+  principalAmount?: boolean
   periodStart?: boolean
   periodEnd?: boolean
   createdAt?: boolean
@@ -683,6 +767,8 @@ export type PaymentAllocationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   paymentId?: boolean
   loanId?: boolean
   amount?: boolean
+  interestAmount?: boolean
+  principalAmount?: boolean
   periodStart?: boolean
   periodEnd?: boolean
   createdAt?: boolean
@@ -695,6 +781,8 @@ export type PaymentAllocationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   paymentId?: boolean
   loanId?: boolean
   amount?: boolean
+  interestAmount?: boolean
+  principalAmount?: boolean
   periodStart?: boolean
   periodEnd?: boolean
   createdAt?: boolean
@@ -707,12 +795,14 @@ export type PaymentAllocationSelectScalar = {
   paymentId?: boolean
   loanId?: boolean
   amount?: boolean
+  interestAmount?: boolean
+  principalAmount?: boolean
   periodStart?: boolean
   periodEnd?: boolean
   createdAt?: boolean
 }
 
-export type PaymentAllocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "paymentId" | "loanId" | "amount" | "periodStart" | "periodEnd" | "createdAt", ExtArgs["result"]["paymentAllocation"]>
+export type PaymentAllocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "paymentId" | "loanId" | "amount" | "interestAmount" | "principalAmount" | "periodStart" | "periodEnd" | "createdAt", ExtArgs["result"]["paymentAllocation"]>
 export type PaymentAllocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.PaymentDefaultArgs<ExtArgs>
   loan?: boolean | Prisma.LoanDefaultArgs<ExtArgs>
@@ -737,6 +827,8 @@ export type $PaymentAllocationPayload<ExtArgs extends runtime.Types.Extensions.I
     paymentId: string
     loanId: string
     amount: runtime.Decimal
+    interestAmount: runtime.Decimal
+    principalAmount: runtime.Decimal
     periodStart: Date | null
     periodEnd: Date | null
     createdAt: Date
@@ -1169,6 +1261,8 @@ export interface PaymentAllocationFieldRefs {
   readonly paymentId: Prisma.FieldRef<"PaymentAllocation", 'String'>
   readonly loanId: Prisma.FieldRef<"PaymentAllocation", 'String'>
   readonly amount: Prisma.FieldRef<"PaymentAllocation", 'Decimal'>
+  readonly interestAmount: Prisma.FieldRef<"PaymentAllocation", 'Decimal'>
+  readonly principalAmount: Prisma.FieldRef<"PaymentAllocation", 'Decimal'>
   readonly periodStart: Prisma.FieldRef<"PaymentAllocation", 'DateTime'>
   readonly periodEnd: Prisma.FieldRef<"PaymentAllocation", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"PaymentAllocation", 'DateTime'>

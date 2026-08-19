@@ -15,6 +15,13 @@ export async function getBorrowers() {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      loans: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
   });
 }
 
