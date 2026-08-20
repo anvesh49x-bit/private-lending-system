@@ -574,8 +574,118 @@ export async function createPayment({
       }
     );
 
-  return {
+    return {
     payment: result,
     allocation,
   };
+}
+
+/**
+ * Returns the payment history for a borrower.
+ *
+ * Each payment includes:
+ * - total amount received
+ * - interest paid
+ * - principal paid
+ * - excess amount
+ * - allocation details
+ */
+export async function getPaymentHistory(
+  borrowerId: string
+) {
+  const payments = await prisma.payment.findMany({
+    where: {
+      borrowerId,
+    },
+
+    orderBy: {
+      paymentDate: "desc",
+    },
+
+    include: {
+      allocations: {
+        include: {
+          loan: {
+            select: {
+              id: true,
+              principalAmount: true,
+              interestRate: true,
+              interestFrequency: true,
+              interestValueType: true,
+            },
+          },
+        },
+      },
+
+      excesses: true,
+    },
+  });
+
+  return payments.map((payment) => {
+    const interestPaid = roundMoney(
+      payment.allocations.reduce(
+        (total, allocation) =>
+          total +
+          Number(allocation.interestAmount),
+        0
+      )
+    );
+
+    const principalPaid = roundMoney(
+      payment.allocations.reduce(
+        (total, allocation) =>
+          total +
+          Number(allocation.principalAmount),
+        0
+      )
+    );
+
+    const excessAmount = roundMoney(
+      payment.excesses.reduce(
+        (total, excess) =>
+          total +
+          Number(excess.amount),
+        0
+      )
+    );
+
+    return {
+      id: payment.id,
+      amount: Number(payment.amount),
+      paymentDate: payment.paymentDate,
+      status: payment.status,
+      notes: payment.notes,
+
+      interestPaid,
+
+      principalPaid,
+
+      excessAmount,
+
+      allocations: payment.allocations.map(
+        (allocation) => ({
+          id: allocation.id,
+          loanId: allocation.loanId,
+
+          amount: Number(
+            allocation.amount
+          ),
+
+          interestAmount: Number(
+            allocation.interestAmount
+          ),
+
+          principalAmount: Number(
+            allocation.principalAmount
+          ),
+
+          periodStart:
+            allocation.periodStart,
+
+          periodEnd:
+            allocation.periodEnd,
+        })
+      ),
+    };
+  });
 }
