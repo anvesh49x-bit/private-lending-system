@@ -43,6 +43,10 @@ export async function createBorrowerWithLoan(
     formData.get("endDate") || ""
   );
 
+  const collectionReminderDateValue = String(
+    formData.get("collectionReminderDate") || ""
+  );
+
   if (!fullName || !phone) {
     throw new Error(
       "Borrower name and phone number are required."
@@ -73,41 +77,57 @@ export async function createBorrowerWithLoan(
     );
   }
 
-  const borrower = await prisma.borrower.create({
-    data: {
-      fullName,
-      phone,
-      address: addressValue || null,
+  if (interestFrequency === "CUSTOM_DATE_RANGE" && !endDateValue) {
+    throw new Error("End date is required for custom date range loans.");
+  }
 
-      loans: {
-        create: {
-          principalAmount,
-          interestRate,
+  let borrower;
+  try {
+    borrower = await prisma.borrower.create({
+      data: {
+        fullName,
+        phone,
+        address: addressValue || null,
 
-          interestFrequency:
-            interestFrequency as
-              | "MONTHLY"
-              | "YEARLY"
-              | "CUSTOM_DATE_RANGE",
+        loans: {
+          create: {
+            principalAmount,
+            interestRate,
 
-          interestValueType:
-            interestValueType as
-              | "PERCENTAGE"
-              | "RUPEES",
+            interestFrequency:
+              interestFrequency as
+                | "MONTHLY"
+                | "CUSTOM_DATE_RANGE",
 
-          startDate: new Date(
-            `${startDateValue}T00:00:00`
-          ),
+            interestValueType:
+              interestValueType as
+                | "PERCENTAGE"
+                | "RUPEES",
 
-          endDate: endDateValue
-            ? new Date(
-                `${endDateValue}T00:00:00`
-              )
-            : null,
+            startDate: new Date(
+              `${startDateValue}T00:00:00`
+            ),
+
+            endDate: endDateValue
+              ? new Date(
+                  `${endDateValue}T00:00:00`
+                )
+              : null,
+            collectionReminderDate: collectionReminderDateValue
+              ? new Date(
+                  `${collectionReminderDateValue}T00:00:00`
+                )
+              : null,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      throw new Error(`A borrower with the phone number ${phone} already exists.`);
+    }
+    throw error;
+  }
 
   redirect(`/borrowers/${borrower.id}`);
 }

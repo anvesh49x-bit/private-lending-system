@@ -87,7 +87,6 @@ export async function POST(request: Request) {
     // Validate frequency
     const validFrequencies = [
       "MONTHLY",
-      "YEARLY",
       "CUSTOM_DATE_RANGE",
     ];
 

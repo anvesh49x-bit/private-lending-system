@@ -164,52 +164,24 @@ export function calculateEstimatedInterest({
   let estimatedInterest = 0;
 
   /*
-   * MONTHLY
+   * MONTHLY & CUSTOM_DATE_RANGE
    *
-   * ₹2 per ₹100 per month.
-   *
-   * ₹20,000 at ₹2 per ₹100:
-   * One month = ₹400 interest.
+   * Both calculate based on actual duration.
+   * "Custom Date Range" behaves functionally identical to "Monthly",
+   * but acts as a fixed-term loan (UI enforces end date).
    */
-  if (interestFrequency === "MONTHLY") {
+  if (interestFrequency === "MONTHLY" || interestFrequency === "CUSTOM_DATE_RANGE") {
+    // We treat 30 days as 1 month consistently.
+    // e.g. 365 days / 30 = 12.166 months.
     const monthsElapsed = daysElapsed / 30;
 
-    estimatedInterest =
-      interestForOnePeriod * monthsElapsed;
+    estimatedInterest = interestForOnePeriod * monthsElapsed;
   }
 
-  /*
-   * YEARLY
-   *
-   * ₹2 per ₹100 per year.
-   *
-   * ₹20,000 at ₹2 per ₹100:
-   * One year = ₹400 interest.
-   */
+  // Legacy fallback for existing YEARLY loans
   if (interestFrequency === "YEARLY") {
     const yearsElapsed = daysElapsed / 365;
-
-    estimatedInterest =
-      interestForOnePeriod * yearsElapsed;
-  }
-
-  /*
-   * CUSTOM_DATE_RANGE
-   *
-   * The configured custom date range itself is ONE interest period.
-   *
-   * Example:
-   *
-   * Principal = ₹20,000
-   * Rate = ₹2 per ₹100
-   *
-   * Interest for that custom period = ₹400
-   *
-   * This is why the same ₹2 rule can correctly produce ₹400
-   * for the selected custom period.
-   */
-  if (interestFrequency === "CUSTOM_DATE_RANGE") {
-    estimatedInterest = interestForOnePeriod;
+    estimatedInterest = interestForOnePeriod * yearsElapsed;
   }
 
   estimatedInterest = Number(

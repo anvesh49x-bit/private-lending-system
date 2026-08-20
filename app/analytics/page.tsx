@@ -205,50 +205,100 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
             {/* SECTION 7 — TOP OUTSTANDING LOANS */}
             <section className="space-y-4">
               <h2 className="text-xl font-semibold text-zinc-900">TOP OUTSTANDING LOANS</h2>
-              <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white shadow-sm">
-                <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
-                  <thead className="bg-zinc-50">
-                    <tr>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Borrower Name</th>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Original Principal</th>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Principal Remaining</th>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Interest Remaining</th>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Total Outstanding</th>
-                      <th className="px-6 py-4 font-semibold text-zinc-900">Status</th>
-                      <th className="px-6 py-4">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200">
-                    {data.topOutstandingLoans.map((loan) => (
-                      <tr key={loan.id} className="hover:bg-zinc-50 transition">
-                        <td className="px-6 py-4 font-medium text-zinc-900">{loan.borrowerName}</td>
-                        <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.originalPrincipal)}</td>
-                        <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.principalRemaining)}</td>
-                        <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.interestRemaining)}</td>
-                        <td className="px-6 py-4 font-semibold text-red-600">{formatCurrency(loan.totalOutstanding)}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
-                              loan.status === "ACTIVE"
-                                ? "bg-amber-50 text-amber-700"
-                                : "bg-green-50 text-green-700"
-                            }`}
-                          >
-                            {loan.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Link
-                            href={`/loans/${loan.id}`}
-                            className="font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                          >
-                            View Loan <span aria-hidden="true">&rarr;</span>
-                          </Link>
-                        </td>
+              <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+                {/* Mobile View: Stacked Cards */}
+                <div className="block sm:hidden divide-y divide-zinc-100">
+                  {data.topOutstandingLoans.map((loan) => (
+                    <div key={loan.id} className="p-4 hover:bg-zinc-50 transition">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold text-zinc-900">{loan.borrowerName}</h3>
+                          <p className="text-xs text-zinc-500 mt-1">Orig: {formatCurrency(loan.originalPrincipal)}</p>
+                        </div>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
+                            loan.status === "ACTIVE"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-green-50 text-green-700"
+                          }`}
+                        >
+                          {loan.status}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                        <div className="bg-zinc-50 p-2 rounded-lg border border-zinc-100">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Principal Due</p>
+                          <p className="font-medium text-zinc-900">{formatCurrency(loan.principalRemaining)}</p>
+                        </div>
+                        <div className="bg-zinc-50 p-2 rounded-lg border border-zinc-100">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Interest Due</p>
+                          <p className="font-medium text-zinc-900">{formatCurrency(loan.interestRemaining)}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Total Due</p>
+                          <p className="font-bold text-red-600">{formatCurrency(loan.totalOutstanding)}</p>
+                        </div>
+                        <Link
+                          href={`/loans/${loan.id}`}
+                          className="font-medium text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"
+                        >
+                          View <span aria-hidden="true">&rarr;</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop View: Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
+                    <thead className="bg-zinc-50">
+                      <tr>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Borrower Name</th>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Original Principal</th>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Principal Remaining</th>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Interest Remaining</th>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Total Outstanding</th>
+                        <th className="px-6 py-4 font-semibold text-zinc-900">Status</th>
+                        <th className="px-6 py-4">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200">
+                      {data.topOutstandingLoans.map((loan) => (
+                        <tr key={loan.id} className="hover:bg-zinc-50 transition">
+                          <td className="px-6 py-4 font-medium text-zinc-900">{loan.borrowerName}</td>
+                          <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.originalPrincipal)}</td>
+                          <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.principalRemaining)}</td>
+                          <td className="px-6 py-4 text-zinc-500">{formatCurrency(loan.interestRemaining)}</td>
+                          <td className="px-6 py-4 font-semibold text-red-600">{formatCurrency(loan.totalOutstanding)}</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
+                                loan.status === "ACTIVE"
+                                  ? "bg-amber-50 text-amber-700"
+                                  : "bg-green-50 text-green-700"
+                              }`}
+                            >
+                              {loan.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Link
+                              href={`/loans/${loan.id}`}
+                              className="font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                            >
+                              View Loan <span aria-hidden="true">&rarr;</span>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </section>
 

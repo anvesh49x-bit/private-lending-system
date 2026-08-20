@@ -39,7 +39,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       interestRate,
       startDate,
       endDate,
+      collectionReminderDate,
     } = body;
+
+    if (interestFrequency === "CUSTOM_DATE_RANGE" && !endDate) {
+      return NextResponse.json({ success: false, message: "End date is required for custom date range loans" }, { status: 400 });
+    }
 
     const loan = await prisma.loan.findUnique({
       where: { id },
@@ -85,6 +90,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ...(!hasPayments && interestRate !== undefined && { interestRate: Number(interestRate) }),
         ...(!hasPayments && startDate !== undefined && { startDate: new Date(startDate) }),
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...(collectionReminderDate !== undefined && { collectionReminderDate: collectionReminderDate ? new Date(collectionReminderDate) : null }),
       },
     });
 

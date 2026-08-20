@@ -185,12 +185,12 @@ export default async function PaymentsHistoryPage({ searchParams }: PaymentsPage
                             </svg>
                           </div>
                           
-                          <div className="flex flex-col justify-center">
-                            <p className="text-[15px] font-semibold text-zinc-900 group-hover:text-zinc-950">
+                          <div className="flex min-w-0 flex-col justify-center">
+                            <p className="truncate text-[15px] font-semibold text-zinc-900 group-hover:text-zinc-950">
                               Received from {payment.borrower.fullName}
                             </p>
                             
-                            <p className="mt-0.5 text-xs text-zinc-500">
+                            <p className="mt-0.5 truncate text-xs text-zinc-500">
                               {payment.borrower.phone}
                             </p>
 

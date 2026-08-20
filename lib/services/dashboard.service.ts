@@ -121,6 +121,47 @@ export async function getDashboardData() {
       dueSoonCount: metrics.dueSoonCount,
       overdueAmount: metrics.overdueAmount,
       dueSoonAmount: metrics.dueSoonAmount,
-    }
+    },
+    collectionReminders: (() => {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      const reminders = summaries
+        .filter(s => s.status === "ACTIVE" && s.loan.collectionReminderDate)
+        .map(s => {
+          const reminderDate = new Date(s.loan.collectionReminderDate!);
+          const reminderDateStart = new Date(reminderDate.getFullYear(), reminderDate.getMonth(), reminderDate.getDate());
+          
+          const timeDiff = reminderDateStart.getTime() - todayStart.getTime();
+          const daysDiff = Math.round(timeDiff / (1000 * 3600 * 24));
+          
+          let status = "UPCOMING";
+          if (daysDiff < 0) status = "OVERDUE";
+          else if (daysDiff === 0) status = "TODAY";
+          
+          return {
+            loanId: s.loan.id,
+            borrowerName: s.loan.borrower.fullName,
+            totalOutstanding: s.totalOutstanding,
+            reminderDate: reminderDate,
+            daysDiff: daysDiff,
+            status: status
+          };
+        })
+        .sort((a, b) => {
+          if (a.status !== b.status) {
+            const order = { OVERDUE: 1, TODAY: 2, UPCOMING: 3 };
+            return order[a.status as keyof typeof order] - order[b.status as keyof typeof order];
+          }
+          return a.daysDiff - b.daysDiff;
+        });
+
+      return {
+        all: reminders,
+        overdueCount: reminders.filter(r => r.status === "OVERDUE").length,
+        todayCount: reminders.filter(r => r.status === "TODAY").length,
+        upcomingCount: reminders.filter(r => r.status === "UPCOMING").length,
+      };
+    })()
   };
 }

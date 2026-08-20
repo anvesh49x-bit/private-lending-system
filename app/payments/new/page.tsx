@@ -260,8 +260,11 @@ export default function NewPaymentPage() {
 
   useEffect(() => {
     if (
+      !selectedBorrowerId ||
+      !borrowers.find((b) => b.id === selectedBorrowerId) ||
       activeLoans.length === 0
     ) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSelectedLoanId("");
       return;
     }
@@ -272,6 +275,7 @@ export default function NewPaymentPage() {
     );
 
     if (!exists) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSelectedLoanId(
         activeLoans[0].id
       );

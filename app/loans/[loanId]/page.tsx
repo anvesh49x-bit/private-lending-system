@@ -367,8 +367,8 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
                               </svg>
                             </div>
                             
-                            <div className="flex flex-col justify-center">
-                              <p className="text-[15px] font-semibold text-zinc-900">
+                            <div className="flex min-w-0 flex-col justify-center">
+                              <p className="truncate text-[15px] font-semibold text-zinc-900">
                                 Payment received
                               </p>
 

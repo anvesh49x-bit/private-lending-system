@@ -40,6 +40,8 @@ function formatDate(dateString: string | Date) {
   }).format(date);
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const data = await getDashboardData();
   const alerts = data.alerts;
@@ -242,18 +244,40 @@ export default async function DashboardPage() {
                 {/* LOAN OVERVIEW */}
                 <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:col-span-2">
                   <h2 className="text-sm font-semibold text-zinc-950 mb-4">Loan Overview</h2>
-                  <div className="grid grid-cols-3 gap-4 divide-x divide-zinc-100">
-                    <div>
+                  <div className="grid grid-cols-1 gap-4 divide-y divide-zinc-100 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                    <div className="pt-2 sm:pt-0">
                       <p className="text-2xl font-semibold text-zinc-900">{data.overview.activeLoansCount}</p>
                       <p className="mt-1 text-xs font-medium text-zinc-500 uppercase tracking-wider">Active Loans</p>
                     </div>
-                    <div className="pl-4">
+                    <div className="pt-4 sm:pl-4 sm:pt-0">
                       <p className="text-2xl font-semibold text-zinc-900">{data.overview.closedLoansCount}</p>
                       <p className="mt-1 text-xs font-medium text-zinc-500 uppercase tracking-wider">Closed Loans</p>
                     </div>
-                    <div className="pl-4">
+                    <div className="pt-4 sm:pl-4 sm:pt-0">
                       <p className="text-2xl font-semibold text-zinc-900">{data.overview.totalBorrowers}</p>
                       <p className="mt-1 text-xs font-medium text-zinc-500 uppercase tracking-wider">Total Borrowers</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* COLLECTION SUMMARY */}
+                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+                  <h2 className="text-sm font-semibold text-zinc-950 mb-4">Collection Alerts</h2>
+                  <div className="space-y-2 text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      <span className="text-zinc-600">Overdue:</span>
+                      <span className="text-zinc-900 font-bold">{data.collectionReminders.overdueCount}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-amber-500" />
+                      <span className="text-zinc-600">Today:</span>
+                      <span className="text-zinc-900 font-bold">{data.collectionReminders.todayCount}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      <span className="text-zinc-600">Upcoming:</span>
+                      <span className="text-zinc-900 font-bold">{data.collectionReminders.upcomingCount}</span>
                     </div>
                   </div>
                 </div>
@@ -290,8 +314,8 @@ export default async function DashboardPage() {
                               </svg>
                             </div>
                             
-                            <div className="flex flex-col justify-center">
-                              <p className="text-[15px] font-semibold text-zinc-900">
+                            <div className="flex min-w-0 flex-col justify-center">
+                              <p className="truncate text-[15px] font-semibold text-zinc-900">
                                 Received from {payment.borrowerName}
                               </p>
                               
@@ -321,6 +345,64 @@ export default async function DashboardPage() {
 
             {/* Right Column: Attention needed */}
             <div className="space-y-8">
+              
+              <section className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[800px]">
+                <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-4">
+                  <h2 className="text-sm font-semibold text-zinc-950">
+                    Collection Reminders
+                  </h2>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Loans with upcoming or past due collection dates.
+                  </p>
+                </div>
+
+                <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+                  {data.collectionReminders.all.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <p className="text-sm text-zinc-500">No collection reminders.</p>
+                      <p className="mt-1 text-xs text-zinc-400">Set a collection reminder when creating or editing a loan.</p>
+                    </div>
+                  ) : (
+                    data.collectionReminders.all.map((reminder) => (
+                      <Link 
+                        key={`${reminder.loanId}-reminder`}
+                        href={`/loans/${reminder.loanId}`}
+                        className="block p-5 hover:bg-zinc-50/50 transition"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-semibold text-zinc-900 text-sm">{reminder.borrowerName}</p>
+                          {reminder.status === "OVERDUE" && (
+                            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700">
+                              {Math.abs(reminder.daysDiff)} {Math.abs(reminder.daysDiff) === 1 ? 'Day' : 'Days'} Overdue
+                            </span>
+                          )}
+                          {reminder.status === "TODAY" && (
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                              Collect Today
+                            </span>
+                          )}
+                          {reminder.status === "UPCOMING" && (
+                            <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-700">
+                              {reminder.daysDiff === 1 ? 'Tomorrow' : `In ${reminder.daysDiff} days`}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-xs text-zinc-500 mb-1">
+                          <span>Date</span>
+                          <span className="font-medium text-zinc-700">{formatDate(reminder.reminderDate)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-xs text-zinc-500">
+                          <span>Outstanding</span>
+                          <span className="font-medium text-zinc-700">{formatCurrency(reminder.totalOutstanding)}</span>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </section>
+
               <section className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col h-full max-h-[800px]">
                 <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-4">
                   <h2 className="text-sm font-semibold text-zinc-950">

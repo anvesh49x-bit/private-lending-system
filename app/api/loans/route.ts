@@ -12,6 +12,7 @@ export async function POST(request: Request) {
       interestRate,
       startDate,
       endDate,
+      collectionReminderDate,
     } = body;
 
     if (!borrowerId) {
@@ -30,6 +31,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Start date is required" }, { status: 400 });
     }
 
+    if (interestFrequency === "CUSTOM_DATE_RANGE" && !endDate) {
+      return NextResponse.json({ error: "End date is required for custom date range loans" }, { status: 400 });
+    }
+
     const loan = await prisma.loan.create({
       data: {
         borrowerId,
@@ -39,6 +44,7 @@ export async function POST(request: Request) {
         interestRate: Number(interestRate),
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
+        collectionReminderDate: collectionReminderDate ? new Date(collectionReminderDate) : null,
       },
     });
 

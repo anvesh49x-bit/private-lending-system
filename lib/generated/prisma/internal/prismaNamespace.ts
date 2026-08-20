@@ -851,6 +851,7 @@ export const LoanScalarFieldEnum = {
   interestRate: 'interestRate',
   startDate: 'startDate',
   endDate: 'endDate',
+  collectionReminderDate: 'collectionReminderDate',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

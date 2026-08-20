@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getCalculatedLoanStatus } from "./payment.service";
 
 export type PortfolioLoanSummary = {

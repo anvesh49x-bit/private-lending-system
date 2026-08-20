@@ -19,10 +19,12 @@ function formatCurrency(amount: number) {
 export default function NewBorrowerPage() {
   const [principalAmount, setPrincipalAmount] = useState("");
   const [interestRate, setInterestRate] = useState("");
-  const [interestFrequency, setInterestFrequency] = useState<"MONTHLY" | "YEARLY" | "CUSTOM_DATE_RANGE">("MONTHLY");
+  const [interestFrequency, setInterestFrequency] = useState<"MONTHLY" | "CUSTOM_DATE_RANGE">("MONTHLY");
   const [interestValueType, setInterestValueType] = useState<"PERCENTAGE" | "RUPEES">("RUPEES");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculation = useMemo(() => {
     if (!principalAmount || !interestRate || !startDate) {
@@ -50,10 +52,8 @@ export default function NewBorrowerPage() {
 
   const frequencyExplanation =
     interestFrequency === "MONTHLY"
-      ? "This interest is applied monthly."
-      : interestFrequency === "YEARLY"
-        ? "This interest is applied yearly."
-        : "This interest is applied once for the selected custom period.";
+      ? "This interest is applied monthly (prorated by days)."
+      : "This interest is calculated across the entire selected duration (prorated identically to monthly).";
 
   return (
     <AppShell>
@@ -89,8 +89,27 @@ export default function NewBorrowerPage() {
             </div>
           </div>
         </div>
+        
+        {error && (
+          <div className="mb-8 rounded-2xl border border-red-200 bg-red-50 p-6 flex items-start gap-4 text-red-700 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div>
+              <h4 className="text-sm font-bold">Could not save</h4>
+              <p className="mt-1 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
 
-        <form action={createBorrowerWithLoan} className="space-y-8">
+        <form action={async (formData) => {
+          try {
+            setError("");
+            setIsSubmitting(true);
+            await createBorrowerWithLoan(formData);
+          } catch (err: any) {
+            setError(err.message || "Failed to create borrower. Please try again.");
+            setIsSubmitting(false);
+          }
+        }} className="space-y-8">
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-8">
               {/* Borrower Info Card */}
@@ -200,7 +219,6 @@ export default function NewBorrowerPage() {
                           className="w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 group-hover:border-zinc-300"
                         >
                           <option value="MONTHLY">Monthly</option>
-                          <option value="YEARLY">Yearly</option>
                           <option value="CUSTOM_DATE_RANGE">Custom Date Range</option>
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-500">
@@ -242,16 +260,34 @@ export default function NewBorrowerPage() {
                       />
                     </label>
 
-                    <label className="group block">
-                      <span className="mb-2 block text-sm font-semibold text-zinc-700">End Date (Optional)</span>
+                    <label className="group block md:col-span-2">
+                      <span className="mb-2 block text-sm font-semibold text-zinc-700">End Date {interestFrequency === "CUSTOM_DATE_RANGE" && "*"}</span>
                       <input
                         name="endDate"
                         type="date"
+                        required={interestFrequency === "CUSTOM_DATE_RANGE"}
+                        min={startDate || undefined}
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 group-hover:border-zinc-300"
                       />
-                      <p className="mt-2 text-xs text-zinc-500">Leave empty for an active, ongoing loan.</p>
+                      <p className="mt-2 text-xs text-zinc-500">
+                        {interestFrequency === "CUSTOM_DATE_RANGE" 
+                          ? "Required for custom date range loans." 
+                          : "Leave empty for an active, ongoing loan."}
+                      </p>
+                    </label>
+
+                    <label className="group block md:col-span-2">
+                      <span className="mb-2 block text-sm font-semibold text-zinc-700">Collection Reminder Date</span>
+                      <input
+                        name="collectionReminderDate"
+                        type="date"
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 group-hover:border-zinc-300"
+                      />
+                      <p className="mt-2 text-xs text-zinc-500">
+                        Optional. Set a date to remind you to collect money from this borrower.
+                      </p>
                     </label>
                   </div>
 
@@ -305,7 +341,7 @@ export default function NewBorrowerPage() {
                       </div>
 
                       <p className="mt-8 text-xs leading-relaxed text-zinc-500">
-                        Automatically calculated based on today's date and the parameters entered in the form.
+                        Automatically calculated based on today&apos;s date and the parameters entered in the form.
                       </p>
                     </div>
                   </div>
@@ -314,13 +350,16 @@ export default function NewBorrowerPage() {
                 <div className="mt-6 flex flex-col gap-3">
                   <button
                     type="submit"
-                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-950 px-6 py-4 text-sm font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg hover:shadow-zinc-900/20 active:scale-95"
+                    disabled={isSubmitting}
+                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-950 px-6 py-4 text-sm font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg hover:shadow-zinc-900/20 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                   >
-                    Create Borrower & Loan
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
+                    {isSubmitting ? "Creating..." : "Create Borrower & Loan"}
+                    {!isSubmitting && (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    )}
                   </button>
                   
                   <Link

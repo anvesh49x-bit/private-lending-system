@@ -18,10 +18,11 @@ export default function EditLoanPage({ params }: EditLoanPageProps) {
   const [loanId, setLoanId] = useState("");
   const [principalAmount, setPrincipalAmount] = useState("");
   const [interestRate, setInterestRate] = useState("");
-  const [interestFrequency, setInterestFrequency] = useState<"MONTHLY" | "YEARLY" | "CUSTOM_DATE_RANGE">("MONTHLY");
+  const [interestFrequency, setInterestFrequency] = useState<"MONTHLY" | "CUSTOM_DATE_RANGE">("MONTHLY");
   const [interestValueType, setInterestValueType] = useState<"PERCENTAGE" | "RUPEES">("RUPEES");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [collectionReminderDate, setCollectionReminderDate] = useState("");
   const [hasPayments, setHasPayments] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,9 @@ export default function EditLoanPage({ params }: EditLoanPageProps) {
         if (loan.endDate) {
           setEndDate(new Date(loan.endDate).toISOString().split('T')[0]);
         }
+        if (loan.collectionReminderDate) {
+          setCollectionReminderDate(new Date(loan.collectionReminderDate).toISOString().split('T')[0]);
+        }
 
         setHasPayments(loan.allocations && loan.allocations.length > 0);
       } catch (err) {
@@ -85,6 +89,7 @@ export default function EditLoanPage({ params }: EditLoanPageProps) {
           interestValueType,
           startDate,
           endDate: endDate || null,
+          collectionReminderDate: collectionReminderDate || null,
         }),
       });
 
@@ -181,7 +186,6 @@ export default function EditLoanPage({ params }: EditLoanPageProps) {
                   className="w-full appearance-none rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="MONTHLY">Monthly</option>
-                  <option value="YEARLY">Yearly</option>
                   <option value="CUSTOM_DATE_RANGE">Custom Date Range</option>
                 </select>
               </label>
@@ -213,15 +217,34 @@ export default function EditLoanPage({ params }: EditLoanPageProps) {
                 />
               </label>
 
-              <label className="group block">
-                <span className="mb-2 block text-sm font-semibold text-zinc-700">End Date (Optional)</span>
+              <label className="group block md:col-span-2">
+                <span className="mb-2 block text-sm font-semibold text-zinc-700">End Date {interestFrequency === "CUSTOM_DATE_RANGE" && "*"}</span>
                 <input
                   type="date"
+                  required={interestFrequency === "CUSTOM_DATE_RANGE"}
+                  min={startDate || undefined}
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
                 />
-                <p className="mt-2 text-xs text-zinc-500">Leave empty for an active, ongoing loan.</p>
+                <p className="mt-2 text-xs text-zinc-500">
+                  {interestFrequency === "CUSTOM_DATE_RANGE"
+                    ? "Required for custom date range loans."
+                    : "Leave empty for an active, ongoing loan."}
+                </p>
+              </label>
+
+              <label className="group block md:col-span-2">
+                <span className="mb-2 block text-sm font-semibold text-zinc-700">Collection Reminder Date</span>
+                <input
+                  type="date"
+                  value={collectionReminderDate}
+                  onChange={(e) => setCollectionReminderDate(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                />
+                <p className="mt-2 text-xs text-zinc-500">
+                  Optional. Set a date to remind you to collect money from this borrower.
+                </p>
               </label>
             </div>
 
