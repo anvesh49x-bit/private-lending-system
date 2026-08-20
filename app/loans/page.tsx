@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db/prisma";
 import AppShell from "@/components/layout/AppShell";
 import { getCalculatedLoanStatus } from "@/lib/services/payment.service";
 
+import { getPortfolioSummary } from "@/lib/services/portfolio.service";
+
 export const dynamic = "force-dynamic";
 
 function formatCurrency(amount: number | string) {
@@ -67,21 +69,25 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
     },
   });
 
-  const calculationDate = new Date();
-
-  // Process loans to attach calculated status and outstanding
-  let processedLoans = allLoans.map((loan) => {
-    const calc = getCalculatedLoanStatus(loan, calculationDate);
-    return {
-      ...loan,
-      calculatedStatus: calc.status,
-      totalOutstanding: calc.totalOutstanding,
-    };
-  });
+  const portfolio = getPortfolioSummary(allLoans, new Date());
+  
+  let processedLoans = portfolio.summaries.map(s => ({
+    ...s.loan,
+    calculatedStatus: s.status,
+    totalOutstanding: s.totalOutstanding,
+    alertStatus: s.alertStatus,
+    daysDiff: s.daysDiff
+  }));
 
   // Apply filters
-  if (statusFilter !== "ALL") {
-    processedLoans = processedLoans.filter(l => l.calculatedStatus === statusFilter);
+  if (statusFilter === "ACTIVE") {
+    processedLoans = processedLoans.filter(l => l.calculatedStatus === "ACTIVE");
+  } else if (statusFilter === "CLOSED") {
+    processedLoans = processedLoans.filter(l => l.calculatedStatus === "CLOSED");
+  } else if (statusFilter === "OVERDUE") {
+    processedLoans = processedLoans.filter(l => l.alertStatus === "OVERDUE");
+  } else if (statusFilter === "DUE_SOON") {
+    processedLoans = processedLoans.filter(l => l.alertStatus === "DUE_SOON");
   }
 
   if (searchQuery) {
@@ -90,8 +96,6 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
       l.borrower.phone.includes(searchQuery)
     );
   }
-
-  const activeLoansCount = processedLoans.filter(l => l.calculatedStatus === "ACTIVE").length;
 
   return (
     <AppShell>
@@ -139,7 +143,7 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
             <button type="submit" className="hidden">Search</button>
           </form>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link 
               href={`/loans?filter=ALL${q ? `&q=${q}` : ''}`}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${statusFilter === 'ALL' ? 'bg-zinc-900 text-white shadow-sm' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'}`}
@@ -151,6 +155,18 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${statusFilter === 'ACTIVE' ? 'bg-zinc-900 text-white shadow-sm' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'}`}
             >
               Active
+            </Link>
+            <Link 
+              href={`/loans?filter=DUE_SOON${q ? `&q=${q}` : ''}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${statusFilter === 'DUE_SOON' ? 'bg-amber-600 text-white shadow-sm' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-amber-50 hover:text-amber-700'}`}
+            >
+              Due Soon
+            </Link>
+            <Link 
+              href={`/loans?filter=OVERDUE${q ? `&q=${q}` : ''}`}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${statusFilter === 'OVERDUE' ? 'bg-red-600 text-white shadow-sm' : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-red-50 hover:text-red-700'}`}
+            >
+              Overdue
             </Link>
             <Link 
               href={`/loans?filter=CLOSED${q ? `&q=${q}` : ''}`}
@@ -183,20 +199,45 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {processedLoans.map((loan) => {
-              const initials = loan.borrower.fullName
+              const initials = String(loan.borrower.fullName)
                 .split(' ')
-                .map((n) => n[0])
+                .map((n: string) => n[0])
                 .join('')
                 .substring(0, 2)
                 .toUpperCase();
 
               const isActive = loan.calculatedStatus === "ACTIVE";
+              const isOverdue = loan.alertStatus === "OVERDUE";
+              const isDueSoon = loan.alertStatus === "DUE_SOON";
 
               return (
                 <div
                   key={loan.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/50"
+                  className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-200/50 ${
+                    !isActive
+                      ? "border-green-200 bg-gradient-to-b from-green-50/50 to-white hover:border-green-300"
+                      : isOverdue
+                      ? "border-red-200 bg-red-50/30 hover:border-red-300"
+                      : isDueSoon
+                      ? "border-amber-200 bg-amber-50/30 hover:border-amber-300"
+                      : "border-zinc-200 bg-white hover:border-zinc-300"
+                  }`}
                 >
+                  {!isActive && (
+                    <div className="absolute top-0 right-0 rounded-bl-xl bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-green-700 shadow-sm z-10">
+                      Fully Paid
+                    </div>
+                  )}
+                  {isActive && isOverdue && (
+                    <div className="absolute top-0 right-0 rounded-bl-xl bg-red-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-700 shadow-sm z-10">
+                      Overdue
+                    </div>
+                  )}
+                  {isActive && isDueSoon && (
+                    <div className="absolute top-0 right-0 rounded-bl-xl bg-amber-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-700 shadow-sm z-10">
+                      Due Soon
+                    </div>
+                  )}
                   <div>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -237,9 +278,16 @@ export default async function LoansPage({ searchParams }: LoansPageProps) {
                         <span className="font-medium text-xs">{getInterestRule(Number(loan.interestRate), loan.interestValueType, loan.interestFrequency)}</span>
                       </div>
 
-                      <div className={`mt-2 flex justify-between items-center p-3 rounded-xl ${isActive ? 'bg-red-50/50' : 'bg-zinc-50/50'}`}>
-                        <span className={`text-xs uppercase tracking-wider font-semibold ${isActive ? 'text-red-600' : 'text-zinc-500'}`}>Total Due</span>
-                        <span className={`font-bold ${isActive ? 'text-red-700' : 'text-zinc-400'}`}>{formatCurrency(loan.totalOutstanding)}</span>
+                      <div className={`mt-2 flex flex-col p-3 rounded-xl ${isActive ? 'bg-red-50/50' : 'bg-zinc-50/50'}`}>
+                        <div className="flex justify-between items-center">
+                          <span className={`text-xs uppercase tracking-wider font-semibold ${isActive ? 'text-red-600' : 'text-zinc-500'}`}>Total Due</span>
+                          <span className={`font-bold ${isActive ? 'text-red-700' : 'text-zinc-400'}`}>{formatCurrency(loan.totalOutstanding)}</span>
+                        </div>
+                        {isActive && (isOverdue || isDueSoon) && (
+                          <div className={`mt-2 text-xs font-bold pt-2 border-t ${isOverdue ? 'border-red-200 text-red-600' : 'border-amber-200 text-amber-600'}`}>
+                            {isOverdue ? `Overdue by ${Math.abs(loan.daysDiff)} days` : loan.daysDiff === 0 ? "Due today" : `Due in ${loan.daysDiff} days`}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

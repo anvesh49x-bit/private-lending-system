@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import { prisma } from "@/lib/db/prisma";
 import { calculateLoanOutstanding } from "@/lib/services/payment.service";
+import DeleteBorrowerButton from "./DeleteBorrowerButton";
 
 type BorrowerPageProps = {
   params: Promise<{
@@ -176,6 +177,21 @@ export default async function BorrowerDetailsPage({
 
           <div className="flex flex-wrap gap-3">
             <Link
+              href={`/borrowers/${borrower.id}/edit`}
+              className="rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950"
+            >
+              Edit Borrower
+            </Link>
+
+            <DeleteBorrowerButton
+              borrowerId={borrower.id}
+              fullName={borrower.fullName}
+              phone={borrower.phone}
+              hasLoans={borrower.loans.length > 0}
+              hasPayments={borrower.payments.length > 0}
+            />
+
+            <Link
               href={`/loans/new?borrowerId=${borrower.id}`}
               className="rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950"
             >
@@ -186,7 +202,7 @@ export default async function BorrowerDetailsPage({
               href={`/payments/new?borrowerId=${borrower.id}`}
               className="rounded-xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
-              + Add Money Received
+              + Receive Payment
             </Link>
           </div>
         </div>
@@ -282,8 +298,17 @@ export default async function BorrowerDetailsPage({
               loanDetails.map((loan, index) => (
                 <div
                   key={loan.id}
-                  className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+                  className={`relative overflow-hidden rounded-2xl border shadow-sm ${
+                    loan.status === "CLOSED"
+                      ? "border-green-200 bg-gradient-to-b from-green-50/50 to-white"
+                      : "border-zinc-200 bg-white"
+                  }`}
                 >
+                  {loan.status === "CLOSED" && (
+                    <div className="absolute top-0 right-0 rounded-bl-xl bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-green-700 shadow-sm z-10">
+                      Fully Paid
+                    </div>
+                  )}
                   <div className="flex flex-col gap-4 border-b border-zinc-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <div className="flex items-center gap-3">
@@ -464,10 +489,16 @@ export default async function BorrowerDetailsPage({
                         </p>
                       </div>
 
-                      <div className="text-left sm:text-right">
+                      <div className="flex items-center gap-4 text-left sm:text-right">
                         <p className="text-2xl font-bold tracking-tight text-zinc-900">
                           {formatCurrency(paymentAmount)}
                         </p>
+                        <Link
+                          href={`/payments/${payment.id}`}
+                          className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-900 hover:text-white"
+                        >
+                          View Receipt
+                        </Link>
                       </div>
                     </div>
 

@@ -326,8 +326,8 @@ export type PaymentAllocationScalarWhereWithAggregatesInput = {
 export type PaymentAllocationCreateInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -340,8 +340,8 @@ export type PaymentAllocationUncheckedCreateInput = {
   paymentId: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -376,8 +376,8 @@ export type PaymentAllocationCreateManyInput = {
   paymentId: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -550,8 +550,8 @@ export type PaymentAllocationUncheckedUpdateManyWithoutPaymentNestedInput = {
 export type PaymentAllocationCreateWithoutLoanInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -562,8 +562,8 @@ export type PaymentAllocationUncheckedCreateWithoutLoanInput = {
   id?: string
   paymentId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -613,8 +613,8 @@ export type PaymentAllocationScalarWhereInput = {
 export type PaymentAllocationCreateWithoutPaymentInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -625,8 +625,8 @@ export type PaymentAllocationUncheckedCreateWithoutPaymentInput = {
   id?: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -662,8 +662,8 @@ export type PaymentAllocationCreateManyLoanInput = {
   id?: string
   paymentId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string
@@ -706,8 +706,8 @@ export type PaymentAllocationCreateManyPaymentInput = {
   id?: string
   loanId: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
-  interestAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  principalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   periodStart?: Date | string | null
   periodEnd?: Date | string | null
   createdAt?: Date | string

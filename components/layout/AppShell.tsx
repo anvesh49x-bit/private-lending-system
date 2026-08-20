@@ -10,6 +10,11 @@ const navigation = [
     icon: "◩",
   },
   {
+    name: "Analytics",
+    href: "/analytics",
+    icon: "📈",
+  },
+  {
     name: "Borrowers",
     href: "/borrowers",
     icon: "◉",
@@ -23,6 +28,11 @@ const navigation = [
     name: "Payments",
     href: "/payments",
     icon: "↳",
+  },
+  {
+    name: "Receipts",
+    href: "/receipts",
+    icon: "🧾",
   },
 ];
 
@@ -38,7 +48,7 @@ export default function AppShell({
       <aside className="fixed inset-y-0 left-0 hidden w-[250px] border-r border-zinc-200 bg-white lg:flex lg:flex-col">
         <div className="flex h-20 items-center px-7">
           <Link
-            href="/borrowers"
+            href="/dashboard"
             className="flex items-center gap-3"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 text-sm font-bold text-white shadow-sm">

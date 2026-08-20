@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import { prisma } from "@/lib/db/prisma";
 import { getCalculatedLoanStatus } from "@/lib/services/payment.service";
+import DeleteLoanButton from "./DeleteLoanButton";
 
 type LoanPageProps = {
   params: Promise<{
@@ -136,13 +137,13 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
         <div className="flex flex-col gap-5 border-b border-zinc-200 pb-7 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <Link
-              href={`/borrowers/${loan.borrowerId}`}
+              href={`/loans`}
               className="text-sm font-medium text-zinc-500 transition hover:text-zinc-950"
             >
-              ← Back to Borrower
+              ← Back to Loans
             </Link>
 
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-5 flex flex-wrap gap-4 items-center">
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
                 Loan Details
               </h1>
@@ -167,7 +168,73 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
               <span>Interest Rule: {getInterestRule(Number(loan.interestRate), loan.interestValueType, loan.interestFrequency)}</span>
             </div>
           </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/borrowers/${loan.borrowerId}`}
+              className="rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950"
+            >
+              View Borrower
+            </Link>
+            <Link
+              href={`/loans/${loan.id}/edit`}
+              className="rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950"
+            >
+              Edit Loan
+            </Link>
+            <DeleteLoanButton
+              loanId={loan.id}
+              borrowerName={loan.borrower.fullName}
+              principalAmount={originalPrincipal}
+              hasAllocations={loan.allocations.length > 0}
+            />
+            <Link
+              href={`/payments/new?loanId=${loan.id}&borrowerId=${loan.borrowerId}`}
+              className="rounded-xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+            >
+              + Receive Payment
+            </Link>
+          </div>
         </div>
+
+        {/* ALERTS */}
+        {isActive && loan.endDate && totalDue > 0 && (() => {
+          const now = new Date();
+          const nowMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+          const endDateMs = new Date(loan.endDate.getFullYear(), loan.endDate.getMonth(), loan.endDate.getDate()).getTime();
+          const diffDays = Math.floor((endDateMs - nowMs) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays < 0) {
+            return (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-6 flex items-start gap-4 shadow-sm">
+                <div className="text-red-600 mt-1">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-red-900">OVERDUE</h3>
+                  <p className="mt-1 text-sm text-red-800">This loan is overdue by {Math.abs(diffDays)} days.</p>
+                  <p className="mt-2 text-base font-semibold text-red-900">Outstanding: {formatCurrency(totalDue)}</p>
+                </div>
+              </div>
+            );
+          } else if (diffDays <= 7) {
+            return (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 flex items-start gap-4 shadow-sm">
+                <div className="text-amber-600 mt-1">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-amber-900">DUE SOON</h3>
+                  <p className="mt-1 text-sm text-amber-800">
+                    {diffDays === 0 ? "Due today." : `Due in ${diffDays} days.`}
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-amber-900">Outstanding: {formatCurrency(totalDue)}</p>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Loan Summary */}
         <section>
@@ -202,7 +269,10 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
         {/* Total Outstanding */}
         <section>
           {!isActive ? (
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm sm:p-8 text-center">
+            <div className="rounded-2xl border border-green-200 bg-gradient-to-b from-green-50 to-white p-6 shadow-sm sm:p-8 text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 rounded-bl-xl bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-green-700 shadow-sm">
+                Fully Paid
+              </div>
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 mb-4">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -285,9 +355,10 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
                       const allocTotal = allocPrincipal + allocInterest;
 
                       return (
-                        <div 
+                        <Link 
+                          href={`/payments/${p.id}`}
                           key={allocation.id}
-                          className="flex flex-row items-center justify-between px-5 py-4 transition hover:bg-zinc-50/50"
+                          className="flex flex-row items-center justify-between px-5 py-4 transition hover:bg-zinc-50/50 block"
                         >
                           <div className="flex items-center gap-4">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
@@ -321,7 +392,7 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
                               </p>
                             )}
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>

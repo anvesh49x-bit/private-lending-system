@@ -1,94 +1,84 @@
 import { prisma } from "@/lib/db/prisma";
-import { getCalculatedLoanStatus } from "./payment.service";
+
+import { getPortfolioSummary } from "./portfolio.service";
 
 export async function getDashboardData() {
   const calculationDate = new Date();
 
-  // 1. Fetch aggregate basic counts
-  const totalBorrowers = await prisma.borrower.count();
+  // Fetch all necessary data in parallel
+  const [totalBorrowers, totalReceivedResult, allLoans, recentPayments] = await Promise.all([
+    prisma.borrower.count(),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { status: "COMPLETED" },
+    }),
+    prisma.loan.findMany({
+      include: {
+        borrower: {
+          select: { fullName: true, phone: true },
+        },
+        allocations: {
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    }),
+    prisma.payment.findMany({
+      take: 5,
+      orderBy: { paymentDate: "desc" },
+      include: {
+        borrower: { select: { fullName: true, phone: true } },
+        allocations: true,
+      },
+    }),
+  ]);
 
-  const totalReceivedResult = await prisma.payment.aggregate({
-    _sum: { amount: true },
-    where: { status: "COMPLETED" },
-  });
   const totalReceived = Number(totalReceivedResult._sum.amount || 0);
+  
+  // Calculate portfolio in one pass
+  const portfolio = getPortfolioSummary(allLoans, calculationDate);
+  const { metrics, summaries } = portfolio;
 
-  // 2. Fetch all loans with allocations to do safe financial calculations
-  const allLoans = await prisma.loan.findMany({
-    include: {
-      borrower: {
-        select: {
-          fullName: true,
-          phone: true,
-        },
-      },
-      allocations: {
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-    },
-  });
-
-  let totalPrincipalLent = 0;
-  let activeLoansCount = 0;
-  let closedLoansCount = 0;
-  let totalPrincipalRemaining = 0;
-  let totalInterestRemaining = 0;
-  let totalOutstanding = 0;
-
-  type ActiveLoanSummary = {
-    id: string;
-    borrowerName: string;
-    originalPrincipal: number;
-    totalOutstanding: number;
-  };
-
-  const activeLoansList: ActiveLoanSummary[] = [];
-
-  for (const loan of allLoans) {
-    const originalPrincipal = Number(loan.principalAmount);
-    totalPrincipalLent += originalPrincipal;
-
-    const calc = getCalculatedLoanStatus(loan, calculationDate);
-
-    if (calc.status === "ACTIVE") {
-      activeLoansCount++;
-      totalPrincipalRemaining += calc.remainingPrincipal;
-      totalInterestRemaining += calc.remainingInterest;
-      totalOutstanding += calc.totalOutstanding;
-
-      activeLoansList.push({
-        id: loan.id,
-        borrowerName: loan.borrower.fullName,
-        originalPrincipal,
-        totalOutstanding: calc.totalOutstanding,
-      });
-    } else {
-      closedLoansCount++;
-    }
-  }
-
-  // Sort active loans by outstanding descending, take top 5
-  activeLoansList.sort((a, b) => b.totalOutstanding - a.totalOutstanding);
+  // Filter for dashboard UI
+  const activeLoansList = summaries
+    .filter(s => s.status === "ACTIVE")
+    .map(s => ({
+      id: s.loan.id,
+      borrowerName: s.loan.borrower.fullName,
+      originalPrincipal: s.originalPrincipal,
+      totalOutstanding: s.totalOutstanding,
+    }))
+    .sort((a, b) => b.totalOutstanding - a.totalOutstanding);
+    
   const topActiveLoans = activeLoansList.slice(0, 5);
 
-  // 3. Fetch latest 5 payments
-  const recentPayments = await prisma.payment.findMany({
-    take: 5,
-    orderBy: {
-      paymentDate: "desc",
-    },
-    include: {
-      borrower: {
-        select: {
-          fullName: true,
-          phone: true,
-        },
-      },
-      allocations: true,
-    },
-  });
+  // Extract alerts from summaries
+  const overdueLoans = summaries
+    .filter(s => s.alertStatus === "OVERDUE")
+    .map(s => ({
+      loanId: s.loan.id,
+      borrowerId: s.loan.borrowerId,
+      borrowerName: s.loan.borrower.fullName,
+      endDate: s.loan.endDate!,
+      daysOverdue: Math.abs(s.daysDiff),
+      remainingPrincipal: s.remainingPrincipal,
+      remainingInterest: s.remainingInterest,
+      totalOutstanding: s.totalOutstanding,
+    }))
+    .sort((a, b) => b.totalOutstanding - a.totalOutstanding);
+
+  const dueSoonLoans = summaries
+    .filter(s => s.alertStatus === "DUE_SOON")
+    .map(s => ({
+      loanId: s.loan.id,
+      borrowerId: s.loan.borrowerId,
+      borrowerName: s.loan.borrower.fullName,
+      endDate: s.loan.endDate!,
+      daysUntilDue: s.daysDiff,
+      remainingPrincipal: s.remainingPrincipal,
+      remainingInterest: s.remainingInterest,
+      totalOutstanding: s.totalOutstanding,
+    }))
+    .sort((a, b) => (a.daysUntilDue || 0) - (b.daysUntilDue || 0) || b.totalOutstanding - a.totalOutstanding);
 
   const formattedRecentPayments = recentPayments.map((payment) => {
     let interestPaid = 0;
@@ -114,15 +104,23 @@ export async function getDashboardData() {
   return {
     overview: {
       totalBorrowers,
-      totalPrincipalLent,
+      totalPrincipalLent: metrics.totalPrincipalLent,
       totalReceived,
-      totalOutstanding,
-      principalRemaining: totalPrincipalRemaining,
-      interestRemaining: totalInterestRemaining,
-      activeLoansCount,
-      closedLoansCount,
+      totalOutstanding: metrics.totalOutstanding,
+      principalRemaining: metrics.totalPrincipalRemaining,
+      interestRemaining: metrics.totalInterestRemaining,
+      activeLoansCount: metrics.activeLoansCount,
+      closedLoansCount: metrics.closedLoansCount,
     },
     topActiveLoans,
     recentPayments: formattedRecentPayments,
+    alerts: {
+      overdueLoans,
+      dueSoonLoans,
+      overdueCount: metrics.overdueCount,
+      dueSoonCount: metrics.dueSoonCount,
+      overdueAmount: metrics.overdueAmount,
+      dueSoonAmount: metrics.dueSoonAmount,
+    }
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import AppShell from "@/components/layout/AppShell";
@@ -79,7 +79,6 @@ function getInterestRule(loan: Loan) {
 }
 
 export default function NewPaymentPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const borrowerIdFromUrl =
@@ -124,6 +123,9 @@ export default function NewPaymentPage() {
     useState(false);
 
   const [error, setError] =
+    useState("");
+
+  const [successPaymentId, setSuccessPaymentId] =
     useState("");
 
   useEffect(() => {
@@ -450,10 +452,7 @@ export default function NewPaymentPage() {
         );
       }
 
-      router.push(
-        `/borrowers/${selectedBorrowerId}`
-      );
-      router.refresh();
+      setSuccessPaymentId(result.data.payment.id);
     } catch (error) {
       setError(
         error instanceof Error
@@ -476,9 +475,9 @@ export default function NewPaymentPage() {
           <div className="relative z-10">
             <Link
               href={
-                selectedBorrowerId
-                  ? `/borrowers/${selectedBorrowerId}`
-                  : "/borrowers"
+                borrowerIdFromUrl
+                  ? `/borrowers/${borrowerIdFromUrl}`
+                  : "/payments"
               }
               className="inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
             >
@@ -486,7 +485,7 @@ export default function NewPaymentPage() {
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
               </svg>
-              Back
+              {borrowerIdFromUrl ? "Back to Borrower" : "Back to Payments"}
             </Link>
 
             <div className="mt-8 max-w-2xl">
@@ -508,6 +507,22 @@ export default function NewPaymentPage() {
           <div className="flex flex-col items-center justify-center rounded-3xl border border-zinc-200 border-dashed bg-zinc-50/50 py-24 text-center">
              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
              <p className="mt-4 text-sm font-medium text-zinc-600">Loading borrowers...</p>
+          </div>
+        ) : successPaymentId ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-green-200 bg-green-50/50 py-24 text-center">
+             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+             </div>
+             <h2 className="text-2xl font-bold text-zinc-900">Payment recorded successfully</h2>
+             <p className="mt-2 text-zinc-600 max-w-sm">The payment has been received and allocated automatically according to your loan rules.</p>
+             <div className="mt-8 flex gap-4">
+               <Link href={`/payments/${successPaymentId}`} className="rounded-xl bg-zinc-950 px-6 py-3 font-semibold text-white transition hover:bg-zinc-800">
+                 View Receipt
+               </Link>
+               <Link href={selectedBorrowerId ? `/borrowers/${selectedBorrowerId}` : "/borrowers"} className="rounded-xl border border-zinc-200 bg-white px-6 py-3 font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:border-zinc-300">
+                 Back to Borrower
+               </Link>
+             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-8">

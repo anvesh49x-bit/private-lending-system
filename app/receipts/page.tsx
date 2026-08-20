@@ -1,9 +1,8 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/layout/AppShell";
-import { prisma } from "@/lib/db/prisma";
-import PaymentsFilter from "./PaymentsFilter";
-
-export const dynamic = "force-dynamic";
 
 function formatCurrency(amount: number | string) {
   return new Intl.NumberFormat("en-IN", {
@@ -29,121 +28,140 @@ function isSameDay(d1: Date, d2: Date) {
     d1.getFullYear() === d2.getFullYear();
 }
 
-type PaymentsPageProps = {
-  searchParams: Promise<{
-    q?: string;
-    status?: string;
-    date?: string;
-  }>;
-};
+export default function PaymentsHistoryPage() {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [dateFilter, setDateFilter] = useState("ALL");
 
-export default async function PaymentsHistoryPage({ searchParams }: PaymentsPageProps) {
-  const { q, status, date } = await searchParams;
-  const searchQuery = q?.toLowerCase() || "";
-  const statusFilter = status || "ALL";
-  const dateFilter = date || "ALL";
-
-  const payments = await prisma.payment.findMany({
-    orderBy: {
-      paymentDate: "desc",
-    },
-    include: {
-      borrower: {
-        select: {
-          fullName: true,
-          phone: true,
-        },
-      },
-      allocations: true,
-    },
-  });
-
-  const filteredPayments = payments.filter(payment => {
-    // Search
-    if (searchQuery) {
-      const matchesSearch = 
-        payment.borrower.fullName.toLowerCase().includes(searchQuery) ||
-        payment.borrower.phone.includes(searchQuery);
-      if (!matchesSearch) return false;
-    }
-
-    // Status
-    if (statusFilter !== "ALL" && payment.status !== statusFilter) {
-      return false;
-    }
-
-    // Date
-    if (dateFilter !== "ALL") {
-      const pDate = new Date(payment.paymentDate);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      if (dateFilter === "TODAY" && !isSameDay(pDate, today)) return false;
-      if (dateFilter === "YESTERDAY" && !isSameDay(pDate, yesterday)) return false;
-      if (dateFilter === "OLDER") {
-        if (isSameDay(pDate, today) || isSameDay(pDate, yesterday)) return false;
+  useEffect(() => {
+    async function loadPayments() {
+      try {
+        const res = await fetch("/api/payments");
+        const json = await res.json();
+        if (json.success) {
+          setPayments(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch payments:", error);
+      } finally {
+        setLoading(false);
       }
     }
+    loadPayments();
+  }, []);
 
-    return true;
-  });
+  const filteredPayments = useMemo(() => {
+    return payments.filter(payment => {
+      // Search
+      const searchStr = searchQuery.toLowerCase();
+      const matchesSearch = 
+        payment.borrower.fullName.toLowerCase().includes(searchStr) ||
+        payment.borrower.phone.includes(searchStr);
+      if (!matchesSearch) return false;
 
-  // Group by date text
-  const groupedPayments: { [key: string]: typeof filteredPayments } = {};
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+      // Status
+      if (statusFilter !== "ALL" && payment.status !== statusFilter) {
+        return false;
+      }
 
-  filteredPayments.forEach(payment => {
-    const pDate = new Date(payment.paymentDate);
-    let groupKey = formatDate(pDate);
-    
-    if (isSameDay(pDate, today)) {
-      groupKey = "TODAY";
-    } else if (isSameDay(pDate, yesterday)) {
-      groupKey = "YESTERDAY";
-    } else {
-      groupKey = groupKey.toUpperCase();
-    }
+      // Date
+      if (dateFilter !== "ALL") {
+        const pDate = new Date(payment.paymentDate);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
 
-    if (!groupedPayments[groupKey]) {
-      groupedPayments[groupKey] = [];
-    }
-    groupedPayments[groupKey].push(payment);
-  });
+        if (dateFilter === "TODAY" && !isSameDay(pDate, today)) return false;
+        if (dateFilter === "YESTERDAY" && !isSameDay(pDate, yesterday)) return false;
+        if (dateFilter === "OLDER") {
+          if (isSameDay(pDate, today) || isSameDay(pDate, yesterday)) return false;
+        }
+      }
 
+      return true;
+    });
+  }, [payments, searchQuery, statusFilter, dateFilter]);
+
+  // Group by date text (Today, Yesterday, Date)
+  const groupedPayments = useMemo(() => {
+    const groups: { [key: string]: any[] } = {};
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    filteredPayments.forEach(payment => {
+      const pDate = new Date(payment.paymentDate);
+      let groupKey = formatDate(pDate);
+      
+      if (isSameDay(pDate, today)) {
+        groupKey = "TODAY";
+      } else if (isSameDay(pDate, yesterday)) {
+        groupKey = "YESTERDAY";
+      } else {
+        groupKey = groupKey.toUpperCase();
+      }
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(payment);
+    });
+    return groups;
+  }, [filteredPayments]);
+
+  // Ensure 'TODAY' is first, then 'YESTERDAY', then others sorted correctly since they come sorted from DB
   const groupKeys = Object.keys(groupedPayments);
 
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
-              Payments
-            </h1>
-            <p className="mt-1 text-sm text-zinc-500">
-              Transaction history of all payments received.
-            </p>
-          </div>
-          
-          <Link
-            href="/payments/new"
-            className="rounded-xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 self-start sm:self-auto"
-          >
-            + Receive Payment
-          </Link>
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-950">
+            Receipts
+          </h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            History of all generated payment receipts.
+          </p>
         </div>
 
         {/* Filters */}
-        <PaymentsFilter 
-          searchQuery={searchQuery} 
-          statusFilter={statusFilter} 
-          dateFilter={dateFilter} 
-        />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            placeholder="Search borrower or phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none transition focus:border-zinc-950 sm:max-w-xs"
+          />
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none transition focus:border-zinc-950"
+          >
+            <option value="ALL">All Dates</option>
+            <option value="TODAY">Today</option>
+            <option value="YESTERDAY">Yesterday</option>
+            <option value="OLDER">Older Dates</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm outline-none transition focus:border-zinc-950"
+          >
+            <option value="ALL">All Status</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="PARTIALLY_REFUNDED">Partially Refunded</option>
+            <option value="REFUNDED">Refunded</option>
+          </select>
+        </div>
 
-        {groupKeys.length === 0 ? (
+        {loading ? (
+          <div className="py-12 text-center text-sm font-medium text-zinc-500">
+            Loading payments...
+          </div>
+        ) : groupKeys.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center">
             <p className="font-semibold text-zinc-900">No payments found</p>
             <p className="mt-1 text-sm text-zinc-500">Adjust your filters or record a new payment.</p>
@@ -163,7 +181,7 @@ export default async function PaymentsHistoryPage({ searchParams }: PaymentsPage
                     let interestAllocated = 0;
 
                     if (payment.allocations) {
-                      payment.allocations.forEach((alloc) => {
+                      payment.allocations.forEach((alloc: any) => {
                         principalAllocated += Number(alloc.principalAmount || 0);
                         interestAllocated += Number(alloc.interestAmount || 0);
                       });

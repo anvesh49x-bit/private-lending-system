@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import AppShell from "@/components/layout/AppShell";
 import { calculateEstimatedInterest } from "@/lib/calculations/interest";
@@ -24,8 +24,10 @@ type Borrower = {
 
 export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const borrowerIdFromUrl = searchParams.get("borrowerId");
   
-  const [borrowerId, setBorrowerId] = useState(borrowers[0]?.id || "");
+  const [borrowerId, setBorrowerId] = useState(borrowerIdFromUrl || (borrowers[0]?.id || ""));
   const [principalAmount, setPrincipalAmount] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [interestFrequency, setInterestFrequency] = useState<"MONTHLY" | "YEARLY" | "CUSTOM_DATE_RANGE">("MONTHLY");
@@ -111,14 +113,14 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
           
           <div className="relative z-10">
             <Link
-              href="/loans"
+              href={borrowerIdFromUrl ? `/borrowers/${borrowerIdFromUrl}` : "/loans"}
               className="inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
                 <polyline points="12 19 5 12 12 5"></polyline>
               </svg>
-              Back to Loans
+              {borrowerIdFromUrl ? "Back to Borrower" : "Back to Loans"}
             </Link>
 
             <div className="mt-8 max-w-2xl">

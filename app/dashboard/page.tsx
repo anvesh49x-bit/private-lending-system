@@ -42,6 +42,7 @@ function formatDate(dateString: string | Date) {
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
+  const alerts = data.alerts;
   const isEmpty = data.overview.totalBorrowers === 0;
 
   return (
@@ -97,6 +98,102 @@ export default async function DashboardPage() {
             </div>
           </div>
         ) : (
+          <div className="space-y-12">
+            
+            {/* LOAN ALERTS SECTION */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-zinc-950">Loan Alerts</h2>
+              </div>
+              
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-3 text-red-200">
+                    <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-red-700">Overdue Loans</p>
+                  <p className="mt-2 text-3xl font-bold text-red-800">{alerts.overdueCount} <span className="text-base font-semibold text-red-600/80">Loans</span></p>
+                </div>
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-3 text-amber-200">
+                    <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700">Due Soon</p>
+                  <p className="mt-2 text-3xl font-bold text-amber-800">{alerts.dueSoonCount} <span className="text-base font-semibold text-amber-600/80">Loans</span></p>
+                </div>
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-wider text-red-700">Overdue Amount</p>
+                  <p className="mt-2 text-2xl font-bold text-red-800">{formatCurrency(alerts.overdueAmount)}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* OVERDUE LIST */}
+                <div className="rounded-2xl border border-red-200 bg-white overflow-hidden shadow-sm">
+                  <div className="bg-red-50 px-5 py-3 border-b border-red-100 flex items-center justify-between">
+                    <h3 className="font-bold text-red-900">OVERDUE</h3>
+                    <span className="bg-red-200 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Requires Action</span>
+                  </div>
+                  <div className="divide-y divide-zinc-100">
+                    {alerts.overdueLoans.length === 0 ? (
+                      <div className="p-6 text-center text-zinc-500 text-sm">No overdue loans.</div>
+                    ) : (
+                      alerts.overdueLoans.map((loan) => (
+                        <div key={loan.loanId} className="p-5 hover:bg-zinc-50 transition flex flex-col gap-3">
+                          <div className="flex justify-between items-start">
+                            <p className="font-semibold text-zinc-900">{loan.borrowerName}</p>
+                            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded">Overdue by {loan.daysOverdue} days</span>
+                          </div>
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-xs text-zinc-500 mb-0.5">Due Date: {formatDate(loan.endDate)}</p>
+                              <p className="text-sm font-bold text-zinc-900">Total Due: {formatCurrency(loan.totalOutstanding)}</p>
+                            </div>
+                            <Link href={`/loans/${loan.loanId}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800">
+                              View Loan &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* DUE SOON LIST */}
+                <div className="rounded-2xl border border-amber-200 bg-white overflow-hidden shadow-sm">
+                  <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center justify-between">
+                    <h3 className="font-bold text-amber-900">DUE SOON</h3>
+                    <span className="bg-amber-200 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Next 7 Days</span>
+                  </div>
+                  <div className="divide-y divide-zinc-100">
+                    {alerts.dueSoonLoans.length === 0 ? (
+                      <div className="p-6 text-center text-zinc-500 text-sm">No loans due in the next 7 days.</div>
+                    ) : (
+                      alerts.dueSoonLoans.map((loan) => (
+                        <div key={loan.loanId} className="p-5 hover:bg-zinc-50 transition flex flex-col gap-3">
+                          <div className="flex justify-between items-start">
+                            <p className="font-semibold text-zinc-900">{loan.borrowerName}</p>
+                            <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                              {loan.daysUntilDue === 0 ? "Due today" : `Due in ${loan.daysUntilDue} days`}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-xs text-zinc-500 mb-0.5">Due Date: {formatDate(loan.endDate)}</p>
+                              <p className="text-sm font-bold text-zinc-900">Total Due: {formatCurrency(loan.totalOutstanding)}</p>
+                            </div>
+                            <Link href={`/loans/${loan.loanId}`} className="text-sm font-semibold text-blue-600 hover:text-blue-800">
+                              View Loan &rarr;
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
           <div className="grid gap-8 lg:grid-cols-3">
             
             {/* Left Column: Summary & Main Stats */}
@@ -181,7 +278,11 @@ export default async function DashboardPage() {
                   <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
                     <div className="divide-y divide-zinc-100">
                       {data.recentPayments.map(payment => (
-                        <div key={payment.id} className="flex flex-row items-center justify-between px-5 py-4 hover:bg-zinc-50/50 transition">
+                        <Link 
+                          href={`/payments/${payment.id}`}
+                          key={payment.id} 
+                          className="flex flex-row items-center justify-between px-5 py-4 hover:bg-zinc-50/50 transition block"
+                        >
                           <div className="flex items-center gap-4">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
                               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -209,7 +310,7 @@ export default async function DashboardPage() {
                               +{formatCurrency(payment.amount)}
                             </p>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -268,6 +369,7 @@ export default async function DashboardPage() {
               </section>
             </div>
 
+          </div>
           </div>
         )}
       </div>
