@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import AppShell from "@/components/layout/AppShell";
 import { prisma } from "@/lib/db/prisma";
-import { calculateEstimatedInterest } from "@/lib/calculations/interest";
+import { calculateLoanOutstanding } from "@/lib/services/payment.service";
 
 type BorrowerPageProps = {
   params: Promise<{
@@ -89,83 +89,24 @@ export default async function BorrowerDetailsPage({
    * loan principal.
    */
   const loanDetails = borrower.loans.map((loan) => {
-    const originalPrincipal = Number(
-      loan.principalAmount
-    );
-
-    const principalPaid = roundMoney(
-      loan.allocations.reduce(
-        (total, allocation) =>
-          total + Number(allocation.principalAmount),
-        0
-      )
-    );
-
-    const interestPaid = roundMoney(
-      loan.allocations.reduce(
-        (total, allocation) =>
-          total + Number(allocation.interestAmount),
-        0
-      )
-    );
-
-    const remainingPrincipal = roundMoney(
-      Math.max(
-        0,
-        originalPrincipal - principalPaid
-      )
-    );
-
-    /*
-     * Calculate interest using the current remaining
-     * principal.
-     */
-    const calculation =
-      remainingPrincipal > 0
-        ? calculateEstimatedInterest({
-            principalAmount: remainingPrincipal,
-            interestRate: Number(
-              loan.interestRate
-            ),
-            interestFrequency:
-              loan.interestFrequency,
-            interestValueType:
-              loan.interestValueType,
-            startDate: loan.startDate,
-            endDate: loan.endDate,
-          })
-        : {
-            estimatedInterest: 0,
-            totalDue: 0,
-            daysElapsed: 0,
-          };
-
-    const accruedInterest = roundMoney(
-      calculation.estimatedInterest
-    );
-
-    const remainingInterest = roundMoney(
-      Math.max(
-        0,
-        accruedInterest - interestPaid
-      )
-    );
-
-    const totalDue = roundMoney(
-      remainingPrincipal + remainingInterest
+    const outstanding = calculateLoanOutstanding(loan, new Date());
+    const isClosed = outstanding.remainingPrincipal <= 0 && outstanding.remainingInterest <= 0;
+    
+    const daysElapsed = Math.floor(
+      (new Date().getTime() - loan.startDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
     return {
       ...loan,
-      originalPrincipal,
-      principalPaid,
-      remainingPrincipal,
-      accruedInterest,
-      interestPaid,
-      remainingInterest,
-      totalDue,
-      daysElapsed: calculation.daysElapsed,
-      estimatedInterest: accruedInterest,
+      status: isClosed ? "CLOSED" : "ACTIVE",
+      originalPrincipal: outstanding.originalPrincipal,
+      principalPaid: outstanding.principalPaid,
+      remainingPrincipal: outstanding.remainingPrincipal,
+      accruedInterest: outstanding.accruedInterest,
+      interestPaid: outstanding.interestPaid,
+      remainingInterest: outstanding.remainingInterest,
+      totalDue: outstanding.totalRemaining,
+      daysElapsed,
     };
   });
 
@@ -370,18 +311,27 @@ export default async function BorrowerDetailsPage({
                       </p>
                     </div>
 
-                    <div className="rounded-xl bg-zinc-50 px-4 py-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                        Interest Rule
-                      </p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div className="rounded-xl bg-zinc-50 px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                          Interest Rule
+                        </p>
 
-                      <p className="mt-1 text-sm font-semibold text-zinc-950">
-                        {getInterestRule(
-                          Number(loan.interestRate),
-                          loan.interestValueType,
-                          loan.interestFrequency
-                        )}
-                      </p>
+                        <p className="mt-1 text-sm font-semibold text-zinc-950">
+                          {getInterestRule(
+                            Number(loan.interestRate),
+                            loan.interestValueType,
+                            loan.interestFrequency
+                          )}
+                        </p>
+                      </div>
+                      
+                      <Link 
+                        href={`/loans/${loan.id}`}
+                        className="flex shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-900 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50"
+                      >
+                        View Loan →
+                      </Link>
                     </div>
                   </div>
 

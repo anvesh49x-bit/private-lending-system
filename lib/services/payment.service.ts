@@ -125,32 +125,15 @@ function getInterestPeriodStart(
  * This prevents previously paid interest from
  * being counted again.
  */
-async function getCurrentOutstandingInterest(
-  loanId: string,
+function getCurrentOutstandingInterestFromData(
+  loan: any,
   remainingPrincipal: number,
   calculationDate: Date
-): Promise<{
+): {
   interestPeriodStart: Date;
   interestPeriodEnd: Date;
   accruedInterest: number;
-}> {
-  const loan = await prisma.loan.findUnique({
-    where: {
-      id: loanId,
-    },
-    include: {
-      allocations: {
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-    },
-  });
-
-  if (!loan) {
-    throw new Error("Loan not found.");
-  }
-
+} {
   const periodStart = getInterestPeriodStart(
     loan.startDate,
     loan.allocations
@@ -202,15 +185,10 @@ async function getCurrentOutstandingInterest(
   };
 }
 
-export async function getLoanOutstanding(
-  loanId: string,
+export function calculateLoanOutstanding(
+  loan: any,
   calculationDate: Date = new Date()
 ) {
-  const loan =
-    await getLoanWithAllocations(
-      loanId
-    );
-
   const originalPrincipal =
     Number(loan.principalAmount);
 
@@ -254,8 +232,8 @@ export async function getLoanOutstanding(
   }
 
   const currentInterest =
-    await getCurrentOutstandingInterest(
-      loanId,
+    getCurrentOutstandingInterestFromData(
+      loan,
       remainingPrincipal,
       calculationDate
     );
@@ -300,6 +278,30 @@ export async function getLoanOutstanding(
 
     interestPeriodEnd:
       currentInterest.interestPeriodEnd,
+  };
+}
+
+export async function getLoanOutstanding(
+  loanId: string,
+  calculationDate: Date = new Date()
+) {
+  const loan =
+    await getLoanWithAllocations(
+      loanId
+    );
+
+  return calculateLoanOutstanding(loan, calculationDate);
+}
+
+export function getCalculatedLoanStatus(loan: any, calculationDate: Date = new Date()) {
+  const outstanding = calculateLoanOutstanding(loan, calculationDate);
+  const isClosed = outstanding.remainingPrincipal <= 0 && outstanding.remainingInterest <= 0;
+  
+  return {
+    status: isClosed ? "CLOSED" : "ACTIVE",
+    remainingPrincipal: outstanding.remainingPrincipal,
+    remainingInterest: outstanding.remainingInterest,
+    totalOutstanding: outstanding.totalRemaining
   };
 }
 
@@ -438,18 +440,11 @@ export async function createPayment({
       paymentDate ?? new Date()
     );
 
-  const loan =
-    await prisma.loan.findUnique({
-      where: {
-        id: loanId,
-      },
-      select: {
-        borrowerId: true,
-      },
-    });
+  const loan = await getLoanWithAllocations(loanId);
 
-  if (!loan) {
-    throw new Error("Loan not found.");
+  const status = getCalculatedLoanStatus(loan, actualPaymentDate);
+  if (status.status === "CLOSED") {
+    throw new Error("This loan is already fully settled. No additional payment can be added.");
   }
 
   if (
