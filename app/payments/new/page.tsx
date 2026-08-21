@@ -530,10 +530,6 @@ export default function NewPaymentPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid gap-8 lg:grid-cols-3">
-              
-              {/* Left Column - Form Steps */}
-              <div className="lg:col-span-2 space-y-8">
                 
                 {/* Step 1: Borrower */}
                 <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md">
@@ -644,8 +640,10 @@ export default function NewPaymentPage() {
                   </div>
                 </section>
 
-                {/* Step 3: Payment Details */}
-                <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md">
+                <div className="grid gap-8 lg:grid-cols-3">
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Step 3: Payment Details */}
+                    <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md">
                   <div className="border-b border-zinc-100 bg-zinc-50/50 px-8 py-6">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
