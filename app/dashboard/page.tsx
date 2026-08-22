@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { format } from "date-fns";
 import AppShell from "@/components/layout/AppShell";
 import { getDashboardData } from "@/lib/services/dashboard.service";
 
@@ -345,11 +346,58 @@ export default async function DashboardPage() {
 
             {/* Right Column: Attention needed */}
             <div className="space-y-8">
+
+              {/* AUTOMATED REMINDERS */}
+              <section className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[400px]">
+                <div className="border-b border-purple-100 bg-purple-50 px-5 py-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-purple-900">
+                      Automated Reminders
+                    </h2>
+                    <p className="mt-1 text-xs text-purple-700/80">
+                      Scheduled notifications.
+                    </p>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-200 text-purple-700">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+                  {data.automatedReminders.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <p className="text-sm text-zinc-500">No scheduled reminders.</p>
+                      <p className="mt-1 text-xs text-zinc-400">Configure them when creating a loan.</p>
+                    </div>
+                  ) : (
+                    data.automatedReminders.map((reminder) => (
+                      <Link 
+                        key={`${reminder.loanId}-autoreminder`}
+                        href={`/loans/${reminder.loanId}`}
+                        className="block p-5 hover:bg-zinc-50/50 transition"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-semibold text-zinc-900 text-sm">{reminder.borrowerName}</p>
+                          <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-purple-700">
+                            {reminder.mode.replace(/_/g, " ")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-zinc-500">
+                          <span>Scheduled for</span>
+                          <span className="font-medium text-zinc-900">
+                            {format(new Date(reminder.scheduledDate), "dd MMM yyyy 'at' hh:mm a")}
+                          </span>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </section>
               
-              <section className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[800px]">
+              <section className="rounded-2xl border border-zinc-200 bg-white shadow-sm overflow-hidden flex flex-col max-h-[400px]">
                 <div className="border-b border-zinc-100 bg-zinc-50 px-5 py-4">
                   <h2 className="text-sm font-semibold text-zinc-950">
-                    Collection Reminders
+                    Collection Reminders (Manual)
                   </h2>
                   <p className="mt-1 text-xs text-zinc-500">
                     Loans with upcoming or past due collection dates.

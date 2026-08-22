@@ -278,6 +278,7 @@ export type LoanWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
   borrower?: Prisma.XOR<Prisma.BorrowerScalarRelationFilter, Prisma.BorrowerWhereInput>
   allocations?: Prisma.PaymentAllocationListRelationFilter
+  reminder?: Prisma.XOR<Prisma.LoanReminderNullableScalarRelationFilter, Prisma.LoanReminderWhereInput> | null
 }
 
 export type LoanOrderByWithRelationInput = {
@@ -295,6 +296,7 @@ export type LoanOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   borrower?: Prisma.BorrowerOrderByWithRelationInput
   allocations?: Prisma.PaymentAllocationOrderByRelationAggregateInput
+  reminder?: Prisma.LoanReminderOrderByWithRelationInput
 }
 
 export type LoanWhereUniqueInput = Prisma.AtLeast<{
@@ -315,6 +317,7 @@ export type LoanWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Loan"> | Date | string
   borrower?: Prisma.XOR<Prisma.BorrowerScalarRelationFilter, Prisma.BorrowerWhereInput>
   allocations?: Prisma.PaymentAllocationListRelationFilter
+  reminder?: Prisma.XOR<Prisma.LoanReminderNullableScalarRelationFilter, Prisma.LoanReminderWhereInput> | null
 }, "id">
 
 export type LoanOrderByWithAggregationInput = {
@@ -369,6 +372,7 @@ export type LoanCreateInput = {
   updatedAt?: Date | string
   borrower: Prisma.BorrowerCreateNestedOneWithoutLoansInput
   allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutLoanInput
+  reminder?: Prisma.LoanReminderCreateNestedOneWithoutLoanInput
 }
 
 export type LoanUncheckedCreateInput = {
@@ -385,6 +389,7 @@ export type LoanUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutLoanInput
+  reminder?: Prisma.LoanReminderUncheckedCreateNestedOneWithoutLoanInput
 }
 
 export type LoanUpdateInput = {
@@ -401,6 +406,7 @@ export type LoanUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   borrower?: Prisma.BorrowerUpdateOneRequiredWithoutLoansNestedInput
   allocations?: Prisma.PaymentAllocationUpdateManyWithoutLoanNestedInput
+  reminder?: Prisma.LoanReminderUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanUncheckedUpdateInput = {
@@ -417,6 +423,7 @@ export type LoanUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutLoanNestedInput
+  reminder?: Prisma.LoanReminderUncheckedUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanCreateManyInput = {
@@ -461,6 +468,11 @@ export type LoanUncheckedUpdateManyInput = {
   status?: Prisma.EnumLoanStatusFieldUpdateOperationsInput | $Enums.LoanStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type LoanScalarRelationFilter = {
+  is?: Prisma.LoanWhereInput
+  isNot?: Prisma.LoanWhereInput
 }
 
 export type LoanListRelationFilter = {
@@ -528,9 +540,18 @@ export type LoanSumOrderByAggregateInput = {
   interestRate?: Prisma.SortOrder
 }
 
-export type LoanScalarRelationFilter = {
-  is?: Prisma.LoanWhereInput
-  isNot?: Prisma.LoanWhereInput
+export type LoanCreateNestedOneWithoutReminderInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReminderInput, Prisma.LoanUncheckedCreateWithoutReminderInput>
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReminderInput
+  connect?: Prisma.LoanWhereUniqueInput
+}
+
+export type LoanUpdateOneRequiredWithoutReminderNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanCreateWithoutReminderInput, Prisma.LoanUncheckedCreateWithoutReminderInput>
+  connectOrCreate?: Prisma.LoanCreateOrConnectWithoutReminderInput
+  upsert?: Prisma.LoanUpsertWithoutReminderInput
+  connect?: Prisma.LoanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LoanUpdateToOneWithWhereWithoutReminderInput, Prisma.LoanUpdateWithoutReminderInput>, Prisma.LoanUncheckedUpdateWithoutReminderInput>
 }
 
 export type LoanCreateNestedManyWithoutBorrowerInput = {
@@ -591,10 +612,6 @@ export type EnumInterestValueTypeFieldUpdateOperationsInput = {
   set?: $Enums.InterestValueType
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type EnumLoanStatusFieldUpdateOperationsInput = {
   set?: $Enums.LoanStatus
 }
@@ -613,6 +630,86 @@ export type LoanUpdateOneRequiredWithoutAllocationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LoanUpdateToOneWithWhereWithoutAllocationsInput, Prisma.LoanUpdateWithoutAllocationsInput>, Prisma.LoanUncheckedUpdateWithoutAllocationsInput>
 }
 
+export type LoanCreateWithoutReminderInput = {
+  id?: string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestFrequency: $Enums.InterestFrequency
+  interestValueType: $Enums.InterestValueType
+  interestRate: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startDate: Date | string
+  endDate?: Date | string | null
+  collectionReminderDate?: Date | string | null
+  status?: $Enums.LoanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  borrower: Prisma.BorrowerCreateNestedOneWithoutLoansInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutLoanInput
+}
+
+export type LoanUncheckedCreateWithoutReminderInput = {
+  id?: string
+  borrowerId: string
+  principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestFrequency: $Enums.InterestFrequency
+  interestValueType: $Enums.InterestValueType
+  interestRate: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startDate: Date | string
+  endDate?: Date | string | null
+  collectionReminderDate?: Date | string | null
+  status?: $Enums.LoanStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutLoanInput
+}
+
+export type LoanCreateOrConnectWithoutReminderInput = {
+  where: Prisma.LoanWhereUniqueInput
+  create: Prisma.XOR<Prisma.LoanCreateWithoutReminderInput, Prisma.LoanUncheckedCreateWithoutReminderInput>
+}
+
+export type LoanUpsertWithoutReminderInput = {
+  update: Prisma.XOR<Prisma.LoanUpdateWithoutReminderInput, Prisma.LoanUncheckedUpdateWithoutReminderInput>
+  create: Prisma.XOR<Prisma.LoanCreateWithoutReminderInput, Prisma.LoanUncheckedCreateWithoutReminderInput>
+  where?: Prisma.LoanWhereInput
+}
+
+export type LoanUpdateToOneWithWhereWithoutReminderInput = {
+  where?: Prisma.LoanWhereInput
+  data: Prisma.XOR<Prisma.LoanUpdateWithoutReminderInput, Prisma.LoanUncheckedUpdateWithoutReminderInput>
+}
+
+export type LoanUpdateWithoutReminderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestFrequency?: Prisma.EnumInterestFrequencyFieldUpdateOperationsInput | $Enums.InterestFrequency
+  interestValueType?: Prisma.EnumInterestValueTypeFieldUpdateOperationsInput | $Enums.InterestValueType
+  interestRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  collectionReminderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumLoanStatusFieldUpdateOperationsInput | $Enums.LoanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  borrower?: Prisma.BorrowerUpdateOneRequiredWithoutLoansNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutLoanNestedInput
+}
+
+export type LoanUncheckedUpdateWithoutReminderInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  borrowerId?: Prisma.StringFieldUpdateOperationsInput | string
+  principalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  interestFrequency?: Prisma.EnumInterestFrequencyFieldUpdateOperationsInput | $Enums.InterestFrequency
+  interestValueType?: Prisma.EnumInterestValueTypeFieldUpdateOperationsInput | $Enums.InterestValueType
+  interestRate?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  collectionReminderDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumLoanStatusFieldUpdateOperationsInput | $Enums.LoanStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutLoanNestedInput
+}
+
 export type LoanCreateWithoutBorrowerInput = {
   id?: string
   principalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -626,6 +723,7 @@ export type LoanCreateWithoutBorrowerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutLoanInput
+  reminder?: Prisma.LoanReminderCreateNestedOneWithoutLoanInput
 }
 
 export type LoanUncheckedCreateWithoutBorrowerInput = {
@@ -641,6 +739,7 @@ export type LoanUncheckedCreateWithoutBorrowerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutLoanInput
+  reminder?: Prisma.LoanReminderUncheckedCreateNestedOneWithoutLoanInput
 }
 
 export type LoanCreateOrConnectWithoutBorrowerInput = {
@@ -700,6 +799,7 @@ export type LoanCreateWithoutAllocationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   borrower: Prisma.BorrowerCreateNestedOneWithoutLoansInput
+  reminder?: Prisma.LoanReminderCreateNestedOneWithoutLoanInput
 }
 
 export type LoanUncheckedCreateWithoutAllocationsInput = {
@@ -715,6 +815,7 @@ export type LoanUncheckedCreateWithoutAllocationsInput = {
   status?: $Enums.LoanStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminder?: Prisma.LoanReminderUncheckedCreateNestedOneWithoutLoanInput
 }
 
 export type LoanCreateOrConnectWithoutAllocationsInput = {
@@ -746,6 +847,7 @@ export type LoanUpdateWithoutAllocationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   borrower?: Prisma.BorrowerUpdateOneRequiredWithoutLoansNestedInput
+  reminder?: Prisma.LoanReminderUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanUncheckedUpdateWithoutAllocationsInput = {
@@ -761,6 +863,7 @@ export type LoanUncheckedUpdateWithoutAllocationsInput = {
   status?: Prisma.EnumLoanStatusFieldUpdateOperationsInput | $Enums.LoanStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminder?: Prisma.LoanReminderUncheckedUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanCreateManyBorrowerInput = {
@@ -790,6 +893,7 @@ export type LoanUpdateWithoutBorrowerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   allocations?: Prisma.PaymentAllocationUpdateManyWithoutLoanNestedInput
+  reminder?: Prisma.LoanReminderUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanUncheckedUpdateWithoutBorrowerInput = {
@@ -805,6 +909,7 @@ export type LoanUncheckedUpdateWithoutBorrowerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutLoanNestedInput
+  reminder?: Prisma.LoanReminderUncheckedUpdateOneWithoutLoanNestedInput
 }
 
 export type LoanUncheckedUpdateManyWithoutBorrowerInput = {
@@ -867,6 +972,7 @@ export type LoanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   borrower?: boolean | Prisma.BorrowerDefaultArgs<ExtArgs>
   allocations?: boolean | Prisma.Loan$allocationsArgs<ExtArgs>
+  reminder?: boolean | Prisma.Loan$reminderArgs<ExtArgs>
   _count?: boolean | Prisma.LoanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["loan"]>
 
@@ -921,6 +1027,7 @@ export type LoanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type LoanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   borrower?: boolean | Prisma.BorrowerDefaultArgs<ExtArgs>
   allocations?: boolean | Prisma.Loan$allocationsArgs<ExtArgs>
+  reminder?: boolean | Prisma.Loan$reminderArgs<ExtArgs>
   _count?: boolean | Prisma.LoanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LoanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -935,6 +1042,7 @@ export type $LoanPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     borrower: Prisma.$BorrowerPayload<ExtArgs>
     allocations: Prisma.$PaymentAllocationPayload<ExtArgs>[]
+    reminder: Prisma.$LoanReminderPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1345,6 +1453,7 @@ export interface Prisma__LoanClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   borrower<T extends Prisma.BorrowerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BorrowerDefaultArgs<ExtArgs>>): Prisma.Prisma__BorrowerClient<runtime.Types.Result.GetResult<Prisma.$BorrowerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   allocations<T extends Prisma.Loan$allocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Loan$allocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentAllocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reminder<T extends Prisma.Loan$reminderArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Loan$reminderArgs<ExtArgs>>): Prisma.Prisma__LoanReminderClient<runtime.Types.Result.GetResult<Prisma.$LoanReminderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1808,6 +1917,25 @@ export type Loan$allocationsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.PaymentAllocationScalarFieldEnum | Prisma.PaymentAllocationScalarFieldEnum[]
+}
+
+/**
+ * Loan.reminder
+ */
+export type Loan$reminderArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LoanReminder
+   */
+  select?: Prisma.LoanReminderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LoanReminder
+   */
+  omit?: Prisma.LoanReminderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LoanReminderInclude<ExtArgs> | null
+  where?: Prisma.LoanReminderWhereInput
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 import AppShell from "@/components/layout/AppShell";
 import { calculateEstimatedInterest } from "@/lib/calculations/interest";
@@ -36,6 +37,11 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
   const [endDate, setEndDate] = useState("");
   const [collectionReminderDate, setCollectionReminderDate] = useState("");
   
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderMode, setReminderMode] = useState<"DEFAULT_DUE_DATE" | "CUSTOM">("DEFAULT_DUE_DATE");
+  const [reminderTime, setReminderTime] = useState("");
+  const [reminderCustomDate, setReminderCustomDate] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -68,6 +74,25 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
       ? "This interest is applied monthly (prorated by days)."
       : "This interest is calculated across the entire selected duration (prorated identically to monthly).";
 
+  // Derive preview
+  const reminderPreview = useMemo(() => {
+    if (!reminderEnabled) return null;
+    if (reminderMode === "DEFAULT_DUE_DATE" && (!endDate || !reminderTime)) return null;
+    if (reminderMode === "CUSTOM" && (!reminderCustomDate || !reminderTime)) return null;
+
+    try {
+      const dStr = reminderMode === "DEFAULT_DUE_DATE" ? endDate : reminderCustomDate;
+      const baseDate = new Date(dStr);
+      if (isNaN(baseDate.getTime())) return null;
+
+      const [hours, minutes] = reminderTime.split(":");
+      baseDate.setHours(Number(hours), Number(minutes), 0, 0);
+      return format(baseDate, "dd MMM yyyy 'at' hh:mm a");
+    } catch {
+      return null;
+    }
+  }, [reminderEnabled, reminderMode, endDate, reminderCustomDate, reminderTime]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -86,6 +111,10 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
           startDate,
           endDate: endDate || null,
           collectionReminderDate: collectionReminderDate || null,
+          reminderEnabled,
+          reminderMode: reminderEnabled ? reminderMode : undefined,
+          reminderTime: reminderEnabled ? reminderTime : undefined,
+          reminderCustomDate: reminderEnabled && reminderMode === "CUSTOM" ? reminderCustomDate : undefined,
         }),
       });
 
@@ -287,7 +316,7 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
                       <input
                         name="endDate"
                         type="date"
-                        required={interestFrequency === "CUSTOM_DATE_RANGE"}
+                        required={interestFrequency === "CUSTOM_DATE_RANGE" || (reminderEnabled && reminderMode === "DEFAULT_DUE_DATE")}
                         min={startDate || undefined}
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
@@ -296,21 +325,7 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
                       <p className="mt-2 text-xs text-zinc-500">
                         {interestFrequency === "CUSTOM_DATE_RANGE" 
                           ? "Required for custom date range loans." 
-                          : "Leave empty for an active, ongoing loan."}
-                      </p>
-                    </label>
-
-                    <label className="group block md:col-span-2">
-                      <span className="mb-2 block text-sm font-semibold text-zinc-700">Collection Reminder Date</span>
-                      <input
-                        name="collectionReminderDate"
-                        type="date"
-                        value={collectionReminderDate}
-                        onChange={(e) => setCollectionReminderDate(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 group-hover:border-zinc-300"
-                      />
-                      <p className="mt-2 text-xs text-zinc-500">
-                        Optional. Set a date to remind you to collect money from this borrower.
+                          : "Leave empty for an active, ongoing loan (unless you are using Default Due Date reminders)."}
                       </p>
                     </label>
                   </div>
@@ -328,6 +343,100 @@ export default function NewLoanForm({ borrowers }: { borrowers: Borrower[] }) {
                   </div>
                 </div>
               </section>
+
+              {/* Payment Reminder Section */}
+              <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md">
+                <div className="border-b border-zinc-100 bg-zinc-50/50 px-8 py-6 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-zinc-900">Payment Reminder</h2>
+                      <p className="text-xs font-medium text-zinc-500">Schedule automatic reminders.</p>
+                    </div>
+                  </div>
+                  <label className="flex items-center cursor-pointer">
+                    <div className="relative">
+                      <input type="checkbox" className="sr-only" checked={reminderEnabled} onChange={(e) => setReminderEnabled(e.target.checked)} />
+                      <div className={`block w-14 h-8 rounded-full transition-colors ${reminderEnabled ? 'bg-purple-500' : 'bg-zinc-200'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${reminderEnabled ? 'transform translate-x-6' : ''}`}></div>
+                    </div>
+                  </label>
+                </div>
+
+                {reminderEnabled && (
+                  <div className="p-8 space-y-6">
+                    <div className="flex gap-4">
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="reminderMode"
+                          value="DEFAULT_DUE_DATE"
+                          className="peer sr-only"
+                          checked={reminderMode === "DEFAULT_DUE_DATE"}
+                          onChange={() => setReminderMode("DEFAULT_DUE_DATE")}
+                        />
+                        <div className="rounded-xl border border-zinc-200 p-4 hover:bg-zinc-50 peer-checked:border-purple-500 peer-checked:bg-purple-50/50 peer-checked:ring-1 peer-checked:ring-purple-500 transition-all">
+                          <p className="font-semibold text-zinc-900">On Loan Due Date</p>
+                          <p className="text-xs text-zinc-500 mt-1">Automatically uses the loan&apos;s End Date.</p>
+                        </div>
+                      </label>
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="reminderMode"
+                          value="CUSTOM"
+                          className="peer sr-only"
+                          checked={reminderMode === "CUSTOM"}
+                          onChange={() => setReminderMode("CUSTOM")}
+                        />
+                        <div className="rounded-xl border border-zinc-200 p-4 hover:bg-zinc-50 peer-checked:border-purple-500 peer-checked:bg-purple-50/50 peer-checked:ring-1 peer-checked:ring-purple-500 transition-all">
+                          <p className="font-semibold text-zinc-900">Choose Custom Date & Time</p>
+                          <p className="text-xs text-zinc-500 mt-1">Pick an exact future date and time.</p>
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-2">
+                      {reminderMode === "CUSTOM" && (
+                        <label className="group block">
+                          <span className="mb-2 block text-sm font-semibold text-zinc-700">Reminder Date *</span>
+                          <input
+                            required
+                            type="date"
+                            min={new Date().toISOString().split("T")[0]}
+                            value={reminderCustomDate}
+                            onChange={(e) => setReminderCustomDate(e.target.value)}
+                            className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10"
+                          />
+                        </label>
+                      )}
+                      
+                      <label className="group block">
+                        <span className="mb-2 block text-sm font-semibold text-zinc-700">Reminder Time *</span>
+                        <input
+                          required
+                          type="time"
+                          value={reminderTime}
+                          onChange={(e) => setReminderTime(e.target.value)}
+                          className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-purple-500 focus:bg-white focus:ring-4 focus:ring-purple-500/10"
+                        />
+                      </label>
+                    </div>
+
+                    {reminderPreview && (
+                      <div className="mt-4 rounded-xl border border-purple-100 bg-purple-50/50 p-4">
+                        <p className="text-sm font-medium text-purple-900">
+                          Reminder will be sent on: <br/>
+                          <span className="font-bold text-lg">{reminderPreview}</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+
             </div>
 
             {/* Sidebar Estimate & Actions */}

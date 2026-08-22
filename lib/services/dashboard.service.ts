@@ -17,6 +17,7 @@ export async function getDashboardData() {
         borrower: {
           select: { fullName: true, phone: true },
         },
+        reminder: true,
         allocations: {
           orderBy: { createdAt: "asc" },
         },
@@ -122,6 +123,22 @@ export async function getDashboardData() {
       overdueAmount: metrics.overdueAmount,
       dueSoonAmount: metrics.dueSoonAmount,
     },
+    automatedReminders: (() => {
+      const pendingReminders = summaries
+        .filter(s => s.status === "ACTIVE" && s.loan.reminder && (s.loan.reminder.status === "PENDING" || s.loan.reminder.status === "PROCESSING"))
+        .map(s => {
+          return {
+            loanId: s.loan.id,
+            borrowerName: s.loan.borrower.fullName,
+            scheduledDate: s.loan.reminder!.scheduledDate,
+            mode: s.loan.reminder!.mode,
+            status: s.loan.reminder!.status,
+          };
+        })
+        .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+        
+      return pendingReminders;
+    })(),
     collectionReminders: (() => {
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());

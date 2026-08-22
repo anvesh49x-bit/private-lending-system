@@ -397,6 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  LoanReminder: 'LoanReminder',
   Borrower: 'Borrower',
   Loan: 'Loan',
   Payment: 'Payment',
@@ -417,10 +418,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "borrower" | "loan" | "payment" | "paymentAllocation" | "excessBalance"
+    modelProps: "loanReminder" | "borrower" | "loan" | "payment" | "paymentAllocation" | "excessBalance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    LoanReminder: {
+      payload: Prisma.$LoanReminderPayload<ExtArgs>
+      fields: Prisma.LoanReminderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LoanReminderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LoanReminderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        findFirst: {
+          args: Prisma.LoanReminderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LoanReminderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        findMany: {
+          args: Prisma.LoanReminderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>[]
+        }
+        create: {
+          args: Prisma.LoanReminderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        createMany: {
+          args: Prisma.LoanReminderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LoanReminderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>[]
+        }
+        delete: {
+          args: Prisma.LoanReminderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        update: {
+          args: Prisma.LoanReminderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        deleteMany: {
+          args: Prisma.LoanReminderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LoanReminderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LoanReminderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>[]
+        }
+        upsert: {
+          args: Prisma.LoanReminderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoanReminderPayload>
+        }
+        aggregate: {
+          args: Prisma.LoanReminderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLoanReminder>
+        }
+        groupBy: {
+          args: Prisma.LoanReminderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LoanReminderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LoanReminderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LoanReminderCountAggregateOutputType> | number
+        }
+      }
+    }
     Borrower: {
       payload: Prisma.$BorrowerPayload<ExtArgs>
       fields: Prisma.BorrowerFieldRefs
@@ -830,6 +905,21 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const LoanReminderScalarFieldEnum = {
+  id: 'id',
+  loanId: 'loanId',
+  mode: 'mode',
+  scheduledDate: 'scheduledDate',
+  status: 'status',
+  sentAt: 'sentAt',
+  errorDetails: 'errorDetails',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LoanReminderScalarFieldEnum = (typeof LoanReminderScalarFieldEnum)[keyof typeof LoanReminderScalarFieldEnum]
+
+
 export const BorrowerScalarFieldEnum = {
   id: 'id',
   fullName: 'fullName',
@@ -947,6 +1037,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'ReminderMode'
+ */
+export type EnumReminderModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderMode'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderMode[]'
+ */
+export type ListEnumReminderModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderMode[]'>
+    
+
+
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -957,6 +1061,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderStatus'
+ */
+export type EnumReminderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderStatus[]'
+ */
+export type ListEnumReminderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderStatus[]'>
     
 
 
@@ -1208,6 +1326,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  loanReminder?: Prisma.LoanReminderOmit
   borrower?: Prisma.BorrowerOmit
   loan?: Prisma.LoanOmit
   payment?: Prisma.PaymentOmit

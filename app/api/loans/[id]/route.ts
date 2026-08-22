@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { parse, set } from "date-fns";
 
 type RouteContext = {
   params: Promise<{
@@ -14,6 +15,7 @@ export async function GET(request: Request, { params }: RouteContext) {
       where: { id },
       include: {
         allocations: true,
+        reminder: true,
       },
     });
 
@@ -40,6 +42,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       startDate,
       endDate,
       collectionReminderDate,
+      reminderEnabled,
+      reminderMode,
+      reminderTime,
+      reminderCustomDate,
     } = body;
 
     if (interestFrequency === "CUSTOM_DATE_RANGE" && !endDate) {
@@ -50,6 +56,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       where: { id },
       include: {
         allocations: true,
+        reminder: true,
       },
     });
 
@@ -80,6 +87,38 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         );
       }
     }
+    
+    // Reminder Logic
+    let scheduledDate: Date | null = null;
+    const finalEndDate = endDate !== undefined ? (endDate ? new Date(endDate) : null) : loan.endDate;
+
+    if (reminderEnabled) {
+      if (!reminderTime) {
+        return NextResponse.json({ error: "Reminder time is required when reminder is enabled" }, { status: 400 });
+      }
+      
+      const timeParsed = parse(reminderTime, "HH:mm", new Date());
+      
+      if (reminderMode === "DEFAULT_DUE_DATE") {
+        if (!finalEndDate) {
+           return NextResponse.json({ error: "End date/Due date is required for default due date reminder" }, { status: 400 });
+        }
+        const baseDate = new Date(finalEndDate);
+        scheduledDate = set(baseDate, { hours: timeParsed.getHours(), minutes: timeParsed.getMinutes(), seconds: 0, milliseconds: 0 });
+      } else if (reminderMode === "CUSTOM") {
+        if (!reminderCustomDate) {
+          return NextResponse.json({ error: "Custom reminder date is required" }, { status: 400 });
+        }
+        const baseDate = new Date(reminderCustomDate);
+        scheduledDate = set(baseDate, { hours: timeParsed.getHours(), minutes: timeParsed.getMinutes(), seconds: 0, milliseconds: 0 });
+      } else {
+        return NextResponse.json({ error: "Invalid reminder mode" }, { status: 400 });
+      }
+
+      if (scheduledDate < new Date()) {
+        return NextResponse.json({ error: "Scheduled reminder date/time cannot be in the past" }, { status: 400 });
+      }
+    }
 
     const updatedLoan = await prisma.loan.update({
       where: { id },
@@ -89,9 +128,38 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ...(!hasPayments && interestValueType !== undefined && { interestValueType }),
         ...(!hasPayments && interestRate !== undefined && { interestRate: Number(interestRate) }),
         ...(!hasPayments && startDate !== undefined && { startDate: new Date(startDate) }),
-        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...(endDate !== undefined && { endDate: finalEndDate }),
         ...(collectionReminderDate !== undefined && { collectionReminderDate: collectionReminderDate ? new Date(collectionReminderDate) : null }),
+        
+        // Handle Reminder
+        ...(reminderEnabled && scheduledDate ? {
+          reminder: {
+            upsert: {
+              create: {
+                mode: reminderMode,
+                scheduledDate: scheduledDate,
+                status: "PENDING",
+              },
+              update: {
+                mode: reminderMode,
+                scheduledDate: scheduledDate,
+                // Reset status to PENDING if they changed the date
+                ...(loan.reminder?.scheduledDate?.getTime() !== scheduledDate.getTime() && {
+                  status: "PENDING",
+                  errorDetails: null,
+                })
+              }
+            }
+          }
+        } : (reminderEnabled === false && loan.reminder ? {
+          reminder: {
+            delete: true
+          }
+        } : {}))
       },
+      include: {
+        reminder: true
+      }
     });
 
     return NextResponse.json({ success: true, data: updatedLoan });
@@ -163,3 +231,4 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
   }
 }
+

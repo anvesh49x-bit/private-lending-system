@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { parse, set } from "date-fns";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +13,11 @@ export async function POST(request: Request) {
       interestRate,
       startDate,
       endDate,
-      collectionReminderDate,
+      collectionReminderDate, // Keep for backward compatibility if needed, though we rely on new system
+      reminderEnabled,
+      reminderMode,
+      reminderTime,
+      reminderCustomDate,
     } = body;
 
     if (!borrowerId) {
@@ -35,6 +40,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "End date is required for custom date range loans" }, { status: 400 });
     }
 
+    let scheduledDate: Date | null = null;
+    if (reminderEnabled) {
+      if (!reminderTime) {
+        return NextResponse.json({ error: "Reminder time is required when reminder is enabled" }, { status: 400 });
+      }
+      
+      const timeParsed = parse(reminderTime, "HH:mm", new Date());
+      
+      if (reminderMode === "DEFAULT_DUE_DATE") {
+        if (!endDate) {
+           return NextResponse.json({ error: "End date/Due date is required for default due date reminder" }, { status: 400 });
+        }
+        const baseDate = new Date(endDate);
+        scheduledDate = set(baseDate, { hours: timeParsed.getHours(), minutes: timeParsed.getMinutes(), seconds: 0, milliseconds: 0 });
+      } else if (reminderMode === "CUSTOM") {
+        if (!reminderCustomDate) {
+          return NextResponse.json({ error: "Custom reminder date is required" }, { status: 400 });
+        }
+        const baseDate = new Date(reminderCustomDate);
+        scheduledDate = set(baseDate, { hours: timeParsed.getHours(), minutes: timeParsed.getMinutes(), seconds: 0, milliseconds: 0 });
+      } else {
+        return NextResponse.json({ error: "Invalid reminder mode" }, { status: 400 });
+      }
+
+      if (scheduledDate < new Date()) {
+        return NextResponse.json({ error: "Scheduled reminder date/time cannot be in the past" }, { status: 400 });
+      }
+    }
+
     const loan = await prisma.loan.create({
       data: {
         borrowerId,
@@ -45,7 +79,19 @@ export async function POST(request: Request) {
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null,
         collectionReminderDate: collectionReminderDate ? new Date(collectionReminderDate) : null,
+        ...(reminderEnabled && scheduledDate && {
+          reminder: {
+            create: {
+              mode: reminderMode,
+              scheduledDate: scheduledDate,
+              status: "PENDING",
+            }
+          }
+        })
       },
+      include: {
+        reminder: true
+      }
     });
 
     return NextResponse.json({ success: true, loan }, { status: 201 });

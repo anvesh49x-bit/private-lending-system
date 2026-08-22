@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  LoanReminder: 'LoanReminder',
   Borrower: 'Borrower',
   Loan: 'Loan',
   Payment: 'Payment',
@@ -72,6 +73,21 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const LoanReminderScalarFieldEnum = {
+  id: 'id',
+  loanId: 'loanId',
+  mode: 'mode',
+  scheduledDate: 'scheduledDate',
+  status: 'status',
+  sentAt: 'sentAt',
+  errorDetails: 'errorDetails',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LoanReminderScalarFieldEnum = (typeof LoanReminderScalarFieldEnum)[keyof typeof LoanReminderScalarFieldEnum]
 
 
 export const BorrowerScalarFieldEnum = {

@@ -50,3 +50,22 @@ export const ExcessStatus = {
 } as const
 
 export type ExcessStatus = (typeof ExcessStatus)[keyof typeof ExcessStatus]
+
+
+export const ReminderMode = {
+  DEFAULT_DUE_DATE: 'DEFAULT_DUE_DATE',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type ReminderMode = (typeof ReminderMode)[keyof typeof ReminderMode]
+
+
+export const ReminderStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type ReminderStatus = (typeof ReminderStatus)[keyof typeof ReminderStatus]

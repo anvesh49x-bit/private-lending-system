@@ -35,6 +35,39 @@ enum ExcessStatus {
   REFUNDED
 }
 
+enum ReminderMode {
+  DEFAULT_DUE_DATE
+  CUSTOM
+}
+
+enum ReminderStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+}
+
+model LoanReminder {
+  id     String @id @default(uuid())
+  loanId String @unique
+
+  mode          ReminderMode
+  scheduledDate DateTime
+  status        ReminderStatus @default(PENDING)
+
+  sentAt       DateTime?
+  errorDetails String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loan Loan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledDate])
+  @@index([status])
+}
+
 model Borrower {
   id        String   @id @default(uuid())
   fullName  String
@@ -43,51 +76,52 @@ model Borrower {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  loans     Loan[]
-  payments  Payment[]
-  excesses  ExcessBalance[]
+  loans    Loan[]
+  payments Payment[]
+  excesses ExcessBalance[]
 }
 
 model Loan {
-  id                String   @id @default(uuid())
-  borrowerId        String
+  id         String @id @default(uuid())
+  borrowerId String
 
-  principalAmount   Decimal  @db.Decimal(15, 2)
+  principalAmount Decimal @db.Decimal(15, 2)
 
   interestFrequency InterestFrequency
   interestValueType InterestValueType
-  interestRate      Decimal  @db.Decimal(15, 2)
+  interestRate      Decimal           @db.Decimal(15, 2)
 
-  startDate         DateTime
-  endDate           DateTime?
+  startDate              DateTime
+  endDate                DateTime?
   collectionReminderDate DateTime?
 
-  status            LoanStatus @default(ACTIVE)
+  status LoanStatus @default(ACTIVE)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  borrower          Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  borrower Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
 
-  allocations       PaymentAllocation[]
+  allocations PaymentAllocation[]
+  reminder    LoanReminder?
 
   @@index([borrowerId])
   @@index([status])
 }
 
 model Payment {
-  id          String        @id @default(uuid())
-  borrowerId  String
+  id         String @id @default(uuid())
+  borrowerId String
 
   amount      Decimal       @db.Decimal(15, 2)
   paymentDate DateTime      @default(now())
   status      PaymentStatus @default(COMPLETED)
   notes       String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  borrower    Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  borrower Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
 
   allocations PaymentAllocation[]
   excesses    ExcessBalance[]
@@ -97,44 +131,44 @@ model Payment {
 }
 
 model PaymentAllocation {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  paymentId       String
-  loanId          String
+  paymentId String
+  loanId    String
 
-  amount          Decimal  @db.Decimal(15, 2)
+  amount Decimal @db.Decimal(15, 2)
 
   // Split each payment clearly into:
   // interest paid + principal paid
-  interestAmount  Decimal  @db.Decimal(15, 2)
-  principalAmount Decimal  @db.Decimal(15, 2)
+  interestAmount  Decimal @db.Decimal(15, 2)
+  principalAmount Decimal @db.Decimal(15, 2)
 
-  periodStart     DateTime?
-  periodEnd       DateTime?
+  periodStart DateTime?
+  periodEnd   DateTime?
 
-  createdAt       DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  payment         Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  loan            Loan @relation(fields: [loanId], references: [id], onDelete: Restrict)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  loan    Loan    @relation(fields: [loanId], references: [id], onDelete: Restrict)
 
   @@index([paymentId])
   @@index([loanId])
 }
 
 model ExcessBalance {
-  id         String       @id @default(uuid())
+  id String @id @default(uuid())
 
   borrowerId String
   paymentId  String
 
-  amount     Decimal      @db.Decimal(15, 2)
-  status     ExcessStatus @default(AVAILABLE)
+  amount Decimal      @db.Decimal(15, 2)
+  status ExcessStatus @default(AVAILABLE)
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  borrower   Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
-  payment    Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  borrower Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
+  payment  Payment  @relation(fields: [paymentId], references: [id], onDelete: Restrict)
 
   @@index([borrowerId])
   @@index([paymentId])

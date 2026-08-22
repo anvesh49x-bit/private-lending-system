@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/LoanReminder'
 export type * from './models/Borrower'
 export type * from './models/Loan'
 export type * from './models/Payment'
