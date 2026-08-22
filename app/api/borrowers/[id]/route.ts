@@ -137,19 +137,40 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: "Borrower not found" }, { status: 404 });
     }
 
-    const hasLoans = borrower._count.loans > 0;
-    const hasPayments = borrower._count.payments > 0;
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete excess balances
+      await tx.excessBalance.deleteMany({
+        where: { borrowerId: id }
+      });
 
-    if (hasLoans && hasPayments) {
-      return NextResponse.json({ success: false, message: "Cannot delete this borrower because loan and payment records exist." }, { status: 409 });
-    } else if (hasLoans) {
-      return NextResponse.json({ success: false, message: "Cannot delete this borrower because loan records exist. Delete eligible loans first." }, { status: 409 });
-    } else if (hasPayments) {
-      return NextResponse.json({ success: false, message: "Cannot delete this borrower because payment history exists." }, { status: 409 });
-    }
+      // 2. Delete payment allocations (since payments and loans are being deleted, we must clear these first)
+      // We can get all payments for this borrower and delete their allocations
+      const payments = await tx.payment.findMany({
+        where: { borrowerId: id },
+        select: { id: true }
+      });
+      const paymentIds = payments.map(p => p.id);
+      
+      if (paymentIds.length > 0) {
+        await tx.paymentAllocation.deleteMany({
+          where: { paymentId: { in: paymentIds } }
+        });
+      }
 
-    await prisma.borrower.delete({
-      where: { id }
+      // 3. Delete payments
+      await tx.payment.deleteMany({
+        where: { borrowerId: id }
+      });
+
+      // 4. Delete loans
+      await tx.loan.deleteMany({
+        where: { borrowerId: id }
+      });
+
+      // 5. Delete the borrower
+      await tx.borrower.delete({
+        where: { id }
+      });
     });
 
     return NextResponse.json({ success: true, message: "Borrower deleted successfully" });
@@ -160,4 +181,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+}

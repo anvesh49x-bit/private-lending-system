@@ -9,6 +9,7 @@ type DeleteBorrowerButtonProps = {
   phone: string;
   hasLoans: boolean;
   hasPayments: boolean;
+  isFullyPaid?: boolean;
 };
 
 export default function DeleteBorrowerButton({
@@ -17,23 +18,17 @@ export default function DeleteBorrowerButton({
   phone,
   hasLoans,
   hasPayments,
+  isFullyPaid = false,
 }: DeleteBorrowerButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [mistakeConfirmed, setMistakeConfirmed] = useState(false);
   const router = useRouter();
 
-  const isBlocked = hasLoans || hasPayments;
-
   async function handleDelete() {
-    if (isBlocked) {
-      if (hasLoans && hasPayments) {
-        setErrorMsg("Cannot delete this borrower because loan and payment records exist.");
-      } else if (hasLoans) {
-        setErrorMsg("Cannot delete this borrower because loan records exist. Delete eligible loans first.");
-      } else if (hasPayments) {
-        setErrorMsg("Cannot delete this borrower because payment history exists.");
-      }
+    if (!isFullyPaid && !mistakeConfirmed) {
+      setErrorMsg("Please confirm that this borrower was created by mistake.");
       return;
     }
 
@@ -60,6 +55,8 @@ export default function DeleteBorrowerButton({
     }
   }
 
+  const isDeleteDisabled = isDeleting || (!isFullyPaid && !mistakeConfirmed);
+
   return (
     <>
       <button
@@ -77,6 +74,31 @@ export default function DeleteBorrowerButton({
             <div className="mt-3 text-sm text-zinc-600 space-y-2">
               <p>Are you sure you want to delete this borrower?</p>
               <p className="font-semibold text-red-600">This action cannot be undone.</p>
+              
+              {!isFullyPaid && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 mt-2">
+                  <p className="font-semibold text-red-700 mb-3">
+                    Warning: This borrower has outstanding loans.
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mistakeConfirmed}
+                      onChange={(e) => setMistakeConfirmed(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-600"
+                    />
+                    <span className="text-sm text-red-700">
+                      I have created this borrower by mistake.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {(hasLoans || hasPayments) && (
+                <p className="font-semibold text-red-600 mt-2">
+                  Any loans, payments, and excess balances associated with this borrower will also be permanently deleted.
+                </p>
+              )}
             </div>
 
             <div className="mt-4 rounded-lg bg-zinc-50 p-4 border border-zinc-100 text-sm">
@@ -101,6 +123,7 @@ export default function DeleteBorrowerButton({
                 onClick={() => {
                   setIsOpen(false);
                   setErrorMsg("");
+                  setMistakeConfirmed(false);
                 }}
                 disabled={isDeleting}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50"
@@ -109,9 +132,9 @@ export default function DeleteBorrowerButton({
               </button>
               <button
                 onClick={handleDelete}
-                disabled={isDeleting || isBlocked}
+                disabled={isDeleteDisabled}
                 className={`rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition ${
-                  isBlocked || isDeleting
+                  isDeleteDisabled
                     ? "bg-red-400 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700"
                 }`}
@@ -119,19 +142,10 @@ export default function DeleteBorrowerButton({
                 {isDeleting ? "Deleting..." : "Delete Borrower"}
               </button>
             </div>
-            
-            {isBlocked && !errorMsg && (
-              <p className="mt-3 text-xs text-red-600 text-center font-medium">
-                {hasLoans && hasPayments
-                  ? "Cannot delete: loan and payment records exist."
-                  : hasLoans
-                  ? "Cannot delete: loan records exist."
-                  : "Cannot delete: payment history exists."}
-              </p>
-            )}
           </div>
         </div>
       )}
     </>
   );
 }
+

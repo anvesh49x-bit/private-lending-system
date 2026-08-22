@@ -189,6 +189,7 @@ export default async function BorrowerDetailsPage({
               phone={borrower.phone}
               hasLoans={borrower.loans.length > 0}
               hasPayments={borrower.payments.length > 0}
+              isFullyPaid={totalDue <= 0}
             />
 
             <Link
