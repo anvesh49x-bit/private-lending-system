@@ -8,6 +8,7 @@ type DeleteLoanButtonProps = {
   borrowerName: string;
   principalAmount: number;
   hasAllocations: boolean;
+  isFullyPaid?: boolean;
 };
 
 export default function DeleteLoanButton({
@@ -15,10 +16,12 @@ export default function DeleteLoanButton({
   borrowerName,
   principalAmount,
   hasAllocations,
+  isFullyPaid = false,
 }: DeleteLoanButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [mistakeConfirmed, setMistakeConfirmed] = useState(false);
   const router = useRouter();
 
   function formatCurrency(amount: number) {
@@ -30,6 +33,11 @@ export default function DeleteLoanButton({
   }
 
   async function handleDelete() {
+    if (!isFullyPaid && !mistakeConfirmed) {
+      setErrorMsg("Please confirm that this loan was created by mistake.");
+      return;
+    }
+    
     setIsDeleting(true);
     setErrorMsg("");
 
@@ -53,6 +61,8 @@ export default function DeleteLoanButton({
     }
   }
 
+  const isDeleteDisabled = isDeleting || (!isFullyPaid && !mistakeConfirmed);
+
   return (
     <>
       <button
@@ -70,8 +80,28 @@ export default function DeleteLoanButton({
             <div className="mt-3 text-sm text-zinc-600 space-y-2">
               <p>Are you sure you want to delete this loan?</p>
               <p className="font-semibold text-red-600">This action cannot be undone.</p>
+              
+              {!isFullyPaid && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 mt-2">
+                  <p className="font-semibold text-red-700 mb-3">
+                    Warning: This loan is not fully paid.
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mistakeConfirmed}
+                      onChange={(e) => setMistakeConfirmed(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-600"
+                    />
+                    <span className="text-sm text-red-700">
+                      I have created this loan (or borrower) by mistake.
+                    </span>
+                  </label>
+                </div>
+              )}
+              
               {hasAllocations && (
-                <p className="font-semibold text-red-600">
+                <p className="font-semibold text-red-600 mt-2">
                   Any payments recorded against this loan will also be permanently deleted.
                 </p>
               )}
@@ -99,6 +129,7 @@ export default function DeleteLoanButton({
                 onClick={() => {
                   setIsOpen(false);
                   setErrorMsg("");
+                  setMistakeConfirmed(false);
                 }}
                 disabled={isDeleting}
                 className="rounded-xl px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-50"
@@ -107,9 +138,9 @@ export default function DeleteLoanButton({
               </button>
               <button
                 onClick={handleDelete}
-                disabled={isDeleting}
+                disabled={isDeleteDisabled}
                 className={`rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition ${
-                  isDeleting
+                  isDeleteDisabled
                     ? "bg-red-400 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700"
                 }`}

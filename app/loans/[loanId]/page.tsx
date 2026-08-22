@@ -187,6 +187,7 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
               borrowerName={loan.borrower.fullName}
               principalAmount={originalPrincipal}
               hasAllocations={loan.allocations.length > 0}
+              isFullyPaid={!isActive}
             />
             <Link
               href={`/payments/new?loanId=${loan.id}&borrowerId=${loan.borrowerId}`}
