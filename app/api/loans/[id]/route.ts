@@ -116,15 +116,45 @@ export async function DELETE(request: Request, { params }: RouteContext) {
       return NextResponse.json({ success: false, message: "Loan not found" }, { status: 404 });
     }
 
-    if (loan.allocations.length > 0) {
-      return NextResponse.json(
-        { success: false, message: "This loan cannot be deleted because payments have already been recorded against it." },
-        { status: 409 }
-      );
+    const paymentIds = loan.allocations.map(a => a.paymentId);
+
+    if (paymentIds.length > 0) {
+      const otherAllocations = await prisma.paymentAllocation.findMany({
+        where: {
+          paymentId: { in: paymentIds },
+          loanId: { not: id }
+        }
+      });
+
+      if (otherAllocations.length > 0) {
+        return NextResponse.json(
+          { success: false, message: "This loan cannot be deleted because it shares payments with other loans." },
+          { status: 409 }
+        );
+      }
     }
 
-    await prisma.loan.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      if (paymentIds.length > 0) {
+        // Delete excess balances associated with these payments
+        await tx.excessBalance.deleteMany({
+          where: { paymentId: { in: paymentIds } }
+        });
+        
+        // Delete allocations
+        await tx.paymentAllocation.deleteMany({
+          where: { paymentId: { in: paymentIds } }
+        });
+        
+        // Delete payments
+        await tx.payment.deleteMany({
+          where: { id: { in: paymentIds } }
+        });
+      }
+
+      await tx.loan.delete({
+        where: { id },
+      });
     });
 
     return NextResponse.json({ success: true, message: "Loan deleted successfully" });

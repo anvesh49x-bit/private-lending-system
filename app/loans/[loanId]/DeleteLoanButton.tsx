@@ -30,11 +30,6 @@ export default function DeleteLoanButton({
   }
 
   async function handleDelete() {
-    if (hasAllocations) {
-      setErrorMsg("This loan cannot be deleted because payments have already been recorded against it.");
-      return;
-    }
-
     setIsDeleting(true);
     setErrorMsg("");
 
@@ -75,6 +70,11 @@ export default function DeleteLoanButton({
             <div className="mt-3 text-sm text-zinc-600 space-y-2">
               <p>Are you sure you want to delete this loan?</p>
               <p className="font-semibold text-red-600">This action cannot be undone.</p>
+              {hasAllocations && (
+                <p className="font-semibold text-red-600">
+                  Any payments recorded against this loan will also be permanently deleted.
+                </p>
+              )}
             </div>
 
             <div className="mt-4 rounded-lg bg-zinc-50 p-4 border border-zinc-100 text-sm">
@@ -107,9 +107,9 @@ export default function DeleteLoanButton({
               </button>
               <button
                 onClick={handleDelete}
-                disabled={isDeleting || hasAllocations}
+                disabled={isDeleting}
                 className={`rounded-xl px-5 py-2 text-sm font-semibold text-white shadow-sm transition ${
-                  hasAllocations || isDeleting
+                  isDeleting
                     ? "bg-red-400 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700"
                 }`}
@@ -117,12 +117,6 @@ export default function DeleteLoanButton({
                 {isDeleting ? "Deleting..." : "Delete Loan"}
               </button>
             </div>
-            
-            {hasAllocations && !errorMsg && (
-              <p className="mt-3 text-xs text-red-600 text-center font-medium">
-                Payments have been recorded against this loan. It cannot be deleted.
-              </p>
-            )}
           </div>
         </div>
       )}
