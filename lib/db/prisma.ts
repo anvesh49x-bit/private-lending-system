@@ -11,15 +11,20 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const adapter = new PrismaPg({
-  connectionString,
-});
+let prismaClient = globalForPrisma.prisma;
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+if (!prismaClient) {
+  const adapter = new PrismaPg({
+    connectionString,
+    max: 1, // Limit each Vercel serverless function to 1 connection to avoid exhausting the 15 connection limit
+  } as any);
+
+  prismaClient = new PrismaClient({
     adapter,
   });
+}
+
+export const prisma = prismaClient;
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
