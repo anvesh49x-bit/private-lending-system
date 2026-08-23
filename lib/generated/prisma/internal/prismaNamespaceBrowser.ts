@@ -78,6 +78,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const LoanReminderScalarFieldEnum = {
   id: 'id',
   loanId: 'loanId',
+  type: 'type',
+  channel: 'channel',
+  message: 'message',
   mode: 'mode',
   scheduledDate: 'scheduledDate',
   status: 'status',

@@ -60,6 +60,23 @@ export const ReminderMode = {
 export type ReminderMode = (typeof ReminderMode)[keyof typeof ReminderMode]
 
 
+export const ReminderType = {
+  PAYMENT_DUE: 'PAYMENT_DUE',
+  LOAN_END_DATE: 'LOAN_END_DATE',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type ReminderType = (typeof ReminderType)[keyof typeof ReminderType]
+
+
+export const ReminderChannel = {
+  WHATSAPP: 'WHATSAPP',
+  SMS: 'SMS'
+} as const
+
+export type ReminderChannel = (typeof ReminderChannel)[keyof typeof ReminderChannel]
+
+
 export const ReminderStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',

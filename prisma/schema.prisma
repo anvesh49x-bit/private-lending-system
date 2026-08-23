@@ -40,6 +40,17 @@ enum ReminderMode {
   CUSTOM
 }
 
+enum ReminderType {
+  PAYMENT_DUE
+  LOAN_END_DATE
+  CUSTOM
+}
+
+enum ReminderChannel {
+  WHATSAPP
+  SMS
+}
+
 enum ReminderStatus {
   PENDING
   PROCESSING
@@ -50,9 +61,13 @@ enum ReminderStatus {
 
 model LoanReminder {
   id     String @id @default(uuid())
-  loanId String @unique
+  loanId String
 
-  mode          ReminderMode
+  type    ReminderType
+  channel ReminderChannel
+  message String?         @db.Text
+
+  mode          ReminderMode? // Keep for backwards compatibility if needed
   scheduledDate DateTime
   status        ReminderStatus @default(PENDING)
 
@@ -64,6 +79,7 @@ model LoanReminder {
 
   loan Loan @relation(fields: [loanId], references: [id], onDelete: Cascade)
 
+  @@index([loanId])
   @@index([scheduledDate])
   @@index([status])
 }
@@ -103,7 +119,7 @@ model Loan {
   borrower Borrower @relation(fields: [borrowerId], references: [id], onDelete: Restrict)
 
   allocations PaymentAllocation[]
-  reminder    LoanReminder?
+  reminders   LoanReminder[]
 
   @@index([borrowerId])
   @@index([status])

@@ -908,6 +908,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const LoanReminderScalarFieldEnum = {
   id: 'id',
   loanId: 'loanId',
+  type: 'type',
+  channel: 'channel',
+  message: 'message',
   mode: 'mode',
   scheduledDate: 'scheduledDate',
   status: 'status',
@@ -1033,6 +1036,34 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderType'
+ */
+export type EnumReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderType'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderType[]'
+ */
+export type ListEnumReminderTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderChannel'
+ */
+export type EnumReminderChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderChannel'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderChannel[]'
+ */
+export type ListEnumReminderChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderChannel[]'>
     
 
 

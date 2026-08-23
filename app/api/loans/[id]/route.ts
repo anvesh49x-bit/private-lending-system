@@ -15,7 +15,7 @@ export async function GET(request: Request, { params }: RouteContext) {
       where: { id },
       include: {
         allocations: true,
-        reminder: true,
+        reminders: true,
       },
     });
 
@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       where: { id },
       include: {
         allocations: true,
-        reminder: true,
+        reminders: true,
       },
     });
 
@@ -133,32 +133,28 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         
         // Handle Reminder
         ...(reminderEnabled && scheduledDate ? {
-          reminder: {
-            upsert: {
-              create: {
-                mode: reminderMode,
-                scheduledDate: scheduledDate,
-                status: "PENDING",
-              },
-              update: {
-                mode: reminderMode,
-                scheduledDate: scheduledDate,
-                // Reset status to PENDING if they changed the date
-                ...(loan.reminder?.scheduledDate?.getTime() !== scheduledDate.getTime() && {
-                  status: "PENDING",
-                  errorDetails: null,
-                })
-              }
+          reminders: {
+            deleteMany: {
+              mode: { not: null } // Delete old auto-scheduled ones
+            },
+            create: {
+              mode: reminderMode,
+              type: "CUSTOM",
+              channel: "WHATSAPP", // Defaulting to WHATSAPP for legacy
+              scheduledDate: scheduledDate,
+              status: "PENDING",
             }
           }
-        } : (reminderEnabled === false && loan.reminder ? {
-          reminder: {
-            delete: true
+        } : (reminderEnabled === false ? {
+          reminders: {
+            deleteMany: {
+              mode: { not: null }
+            }
           }
         } : {}))
       },
       include: {
-        reminder: true
+        reminders: true
       }
     });
 

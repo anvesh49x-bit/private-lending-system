@@ -347,7 +347,7 @@ export default async function DashboardPage() {
                       Automated Reminders
                     </h2>
                     <p className="mt-1 text-xs text-purple-700/80">
-                      Scheduled notifications.
+                      Sent Today: {data.remindersSummary.sentToday} • Pending: {data.remindersSummary.pendingCount}
                     </p>
                   </div>
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-200 text-purple-700">
@@ -364,7 +364,7 @@ export default async function DashboardPage() {
                   ) : (
                     data.automatedReminders.map((reminder) => (
                       <Link 
-                        key={`${reminder.loanId}-autoreminder`}
+                        key={reminder.id}
                         href={`/loans/${reminder.loanId}`}
                         className="block p-5 hover:bg-zinc-50/50 transition"
                       >

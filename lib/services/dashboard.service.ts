@@ -17,7 +17,7 @@ export async function getDashboardData() {
         borrower: {
           select: { fullName: true, phone: true },
         },
-        reminder: true,
+        reminders: true,
         allocations: {
           orderBy: { createdAt: "asc" },
         },
@@ -134,20 +134,47 @@ export async function getDashboardData() {
       dueSoonAmount: metrics.dueSoonAmount,
     },
     automatedReminders: (() => {
-      const pendingReminders = summaries
-        .filter(s => s.status === "ACTIVE" && s.loan.reminder && (s.loan.reminder.status === "PENDING" || s.loan.reminder.status === "PROCESSING"))
-        .map(s => {
-          return {
-            loanId: s.loan.id,
-            borrowerName: s.loan.borrower.fullName,
-            scheduledDate: s.loan.reminder!.scheduledDate,
-            mode: s.loan.reminder!.mode,
-            status: s.loan.reminder!.status,
-          };
-        })
-        .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
-        
-      return pendingReminders;
+      const pendingReminders: any[] = [];
+      summaries.forEach(s => {
+        if (s.status === "ACTIVE" && s.loan.reminders) {
+          s.loan.reminders.forEach((r: any) => {
+            if (r.status === "PENDING" || r.status === "PROCESSING") {
+              pendingReminders.push({
+                id: r.id,
+                loanId: s.loan.id,
+                borrowerName: s.loan.borrower.fullName,
+                scheduledDate: r.scheduledDate,
+                mode: r.type,
+                status: r.status,
+              });
+            }
+          });
+        }
+      });
+      return pendingReminders.sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+    })(),
+    remindersSummary: (() => {
+      let sentToday = 0;
+      let pendingCount = 0;
+      
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      summaries.forEach(s => {
+        if (s.loan.reminders) {
+          s.loan.reminders.forEach((r: any) => {
+            if (r.status === "PENDING" || r.status === "PROCESSING") {
+              pendingCount++;
+            } else if (r.status === "SENT" && r.sentAt) {
+              const sentAt = new Date(r.sentAt);
+              if (sentAt >= todayStart) {
+                sentToday++;
+              }
+            }
+          });
+        }
+      });
+      return { sentToday, pendingCount };
     })(),
     collectionReminders: (() => {
       const now = new Date();

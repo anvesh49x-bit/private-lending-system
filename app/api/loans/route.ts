@@ -80,9 +80,11 @@ export async function POST(request: Request) {
         endDate: endDate ? new Date(endDate) : null,
         collectionReminderDate: collectionReminderDate ? new Date(collectionReminderDate) : null,
         ...(reminderEnabled && scheduledDate && {
-          reminder: {
+          reminders: {
             create: {
               mode: reminderMode,
+              type: "CUSTOM",
+              channel: "WHATSAPP", // Defaulting to WHATSAPP for legacy
               scheduledDate: scheduledDate,
               status: "PENDING",
             }
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
         })
       },
       include: {
-        reminder: true
+        reminders: true
       }
     });
 

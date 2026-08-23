@@ -6,6 +6,8 @@ import AppShell from "@/components/layout/AppShell";
 import { prisma } from "@/lib/db/prisma";
 import { getCalculatedLoanStatus } from "@/lib/services/payment.service";
 import DeleteLoanButton from "./DeleteLoanButton";
+import SendReminderModal from "@/components/loans/SendReminderModal";
+import ReminderHistory from "@/components/loans/ReminderHistory";
 
 type LoanPageProps = {
   params: Promise<{
@@ -70,7 +72,11 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
     },
     include: {
       borrower: true,
-      reminder: true,
+      reminders: {
+        orderBy: {
+          scheduledDate: "desc",
+        }
+      },
       allocations: {
         include: {
           payment: true,
@@ -191,6 +197,17 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
               hasAllocations={loan.allocations.length > 0}
               isFullyPaid={!isActive}
             />
+            <SendReminderModal loan={{
+              id: loan.id,
+              borrowerName: loan.borrower.fullName,
+              borrowerPhone: loan.borrower.phone,
+              principal: originalPrincipal,
+              calculatedInterest: accruedInterest,
+              totalPayable: totalDue,
+              amountPaid: totalReceivedForThisLoan,
+              outstandingAmount: totalDue,
+              endDate: loan.endDate ? loan.endDate.toISOString() : null,
+            }} />
             <Link
               href={`/payments/new?loanId=${loan.id}&borrowerId=${loan.borrowerId}`}
               className="rounded-xl bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
@@ -432,42 +449,17 @@ export default async function LoanDetailsPage({ params }: LoanPageProps) {
                   {displayStatus}
                 </p>
               </div>
-              {loan.reminder && (
-                <div className="p-6 border-t border-zinc-100 sm:col-span-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Payment Reminder Scheduled</p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <p className="text-lg font-medium text-zinc-900">
-                      {format(new Date(loan.reminder.scheduledDate), "dd MMM yyyy 'at' hh:mm a")}
-                    </p>
-                    <div className="flex gap-2 items-center">
-                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded bg-zinc-100 text-zinc-600`}>
-                        {loan.reminder.mode.replace(/_/g, " ")}
-                      </span>
-                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
-                        loan.reminder.status === "PENDING" ? "bg-amber-100 text-amber-700" :
-                        loan.reminder.status === "SENT" ? "bg-green-100 text-green-700" :
-                        loan.reminder.status === "FAILED" ? "bg-red-100 text-red-700" :
-                        "bg-zinc-100 text-zinc-600"
-                      }`}>
-                        {loan.reminder.status}
-                      </span>
-                    </div>
-                  </div>
-                  {loan.reminder.sentAt && (
-                    <p className="mt-2 text-xs text-zinc-500">Sent on: {format(new Date(loan.reminder.sentAt), "dd MMM yyyy 'at' hh:mm a")}</p>
-                  )}
-                  {loan.reminder.errorDetails && (
-                    <p className="mt-2 text-xs text-red-600">Error: {loan.reminder.errorDetails}</p>
-                  )}
-                </div>
-              )}
             </div>
           </div>
+        </section>
+
+        <section>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-zinc-950">
+              Reminder History
+            </h2>
+          </div>
+          <ReminderHistory reminders={loan.reminders} />
         </section>
 
       </div>

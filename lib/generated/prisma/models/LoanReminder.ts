@@ -27,6 +27,9 @@ export type AggregateLoanReminder = {
 export type LoanReminderMinAggregateOutputType = {
   id: string | null
   loanId: string | null
+  type: $Enums.ReminderType | null
+  channel: $Enums.ReminderChannel | null
+  message: string | null
   mode: $Enums.ReminderMode | null
   scheduledDate: Date | null
   status: $Enums.ReminderStatus | null
@@ -39,6 +42,9 @@ export type LoanReminderMinAggregateOutputType = {
 export type LoanReminderMaxAggregateOutputType = {
   id: string | null
   loanId: string | null
+  type: $Enums.ReminderType | null
+  channel: $Enums.ReminderChannel | null
+  message: string | null
   mode: $Enums.ReminderMode | null
   scheduledDate: Date | null
   status: $Enums.ReminderStatus | null
@@ -51,6 +57,9 @@ export type LoanReminderMaxAggregateOutputType = {
 export type LoanReminderCountAggregateOutputType = {
   id: number
   loanId: number
+  type: number
+  channel: number
+  message: number
   mode: number
   scheduledDate: number
   status: number
@@ -65,6 +74,9 @@ export type LoanReminderCountAggregateOutputType = {
 export type LoanReminderMinAggregateInputType = {
   id?: true
   loanId?: true
+  type?: true
+  channel?: true
+  message?: true
   mode?: true
   scheduledDate?: true
   status?: true
@@ -77,6 +89,9 @@ export type LoanReminderMinAggregateInputType = {
 export type LoanReminderMaxAggregateInputType = {
   id?: true
   loanId?: true
+  type?: true
+  channel?: true
+  message?: true
   mode?: true
   scheduledDate?: true
   status?: true
@@ -89,6 +104,9 @@ export type LoanReminderMaxAggregateInputType = {
 export type LoanReminderCountAggregateInputType = {
   id?: true
   loanId?: true
+  type?: true
+  channel?: true
+  message?: true
   mode?: true
   scheduledDate?: true
   status?: true
@@ -174,7 +192,10 @@ export type LoanReminderGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 export type LoanReminderGroupByOutputType = {
   id: string
   loanId: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message: string | null
+  mode: $Enums.ReminderMode | null
   scheduledDate: Date
   status: $Enums.ReminderStatus
   sentAt: Date | null
@@ -207,7 +228,10 @@ export type LoanReminderWhereInput = {
   NOT?: Prisma.LoanReminderWhereInput | Prisma.LoanReminderWhereInput[]
   id?: Prisma.StringFilter<"LoanReminder"> | string
   loanId?: Prisma.StringFilter<"LoanReminder"> | string
-  mode?: Prisma.EnumReminderModeFilter<"LoanReminder"> | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFilter<"LoanReminder"> | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFilter<"LoanReminder"> | $Enums.ReminderChannel
+  message?: Prisma.StringNullableFilter<"LoanReminder"> | string | null
+  mode?: Prisma.EnumReminderModeNullableFilter<"LoanReminder"> | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
   status?: Prisma.EnumReminderStatusFilter<"LoanReminder"> | $Enums.ReminderStatus
   sentAt?: Prisma.DateTimeNullableFilter<"LoanReminder"> | Date | string | null
@@ -220,7 +244,10 @@ export type LoanReminderWhereInput = {
 export type LoanReminderOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
-  mode?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  channel?: Prisma.SortOrder
+  message?: Prisma.SortOrderInput | Prisma.SortOrder
+  mode?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -232,11 +259,14 @@ export type LoanReminderOrderByWithRelationInput = {
 
 export type LoanReminderWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  loanId?: string
   AND?: Prisma.LoanReminderWhereInput | Prisma.LoanReminderWhereInput[]
   OR?: Prisma.LoanReminderWhereInput[]
   NOT?: Prisma.LoanReminderWhereInput | Prisma.LoanReminderWhereInput[]
-  mode?: Prisma.EnumReminderModeFilter<"LoanReminder"> | $Enums.ReminderMode
+  loanId?: Prisma.StringFilter<"LoanReminder"> | string
+  type?: Prisma.EnumReminderTypeFilter<"LoanReminder"> | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFilter<"LoanReminder"> | $Enums.ReminderChannel
+  message?: Prisma.StringNullableFilter<"LoanReminder"> | string | null
+  mode?: Prisma.EnumReminderModeNullableFilter<"LoanReminder"> | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
   status?: Prisma.EnumReminderStatusFilter<"LoanReminder"> | $Enums.ReminderStatus
   sentAt?: Prisma.DateTimeNullableFilter<"LoanReminder"> | Date | string | null
@@ -244,12 +274,15 @@ export type LoanReminderWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
   loan?: Prisma.XOR<Prisma.LoanScalarRelationFilter, Prisma.LoanWhereInput>
-}, "id" | "loanId">
+}, "id">
 
 export type LoanReminderOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
-  mode?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  channel?: Prisma.SortOrder
+  message?: Prisma.SortOrderInput | Prisma.SortOrder
+  mode?: Prisma.SortOrderInput | Prisma.SortOrder
   scheduledDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -267,7 +300,10 @@ export type LoanReminderScalarWhereWithAggregatesInput = {
   NOT?: Prisma.LoanReminderScalarWhereWithAggregatesInput | Prisma.LoanReminderScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"LoanReminder"> | string
   loanId?: Prisma.StringWithAggregatesFilter<"LoanReminder"> | string
-  mode?: Prisma.EnumReminderModeWithAggregatesFilter<"LoanReminder"> | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeWithAggregatesFilter<"LoanReminder"> | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelWithAggregatesFilter<"LoanReminder"> | $Enums.ReminderChannel
+  message?: Prisma.StringNullableWithAggregatesFilter<"LoanReminder"> | string | null
+  mode?: Prisma.EnumReminderModeNullableWithAggregatesFilter<"LoanReminder"> | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeWithAggregatesFilter<"LoanReminder"> | Date | string
   status?: Prisma.EnumReminderStatusWithAggregatesFilter<"LoanReminder"> | $Enums.ReminderStatus
   sentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"LoanReminder"> | Date | string | null
@@ -278,20 +314,26 @@ export type LoanReminderScalarWhereWithAggregatesInput = {
 
 export type LoanReminderCreateInput = {
   id?: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
   scheduledDate: Date | string
   status?: $Enums.ReminderStatus
   sentAt?: Date | string | null
   errorDetails?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  loan: Prisma.LoanCreateNestedOneWithoutReminderInput
+  loan: Prisma.LoanCreateNestedOneWithoutRemindersInput
 }
 
 export type LoanReminderUncheckedCreateInput = {
   id?: string
   loanId: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
   scheduledDate: Date | string
   status?: $Enums.ReminderStatus
   sentAt?: Date | string | null
@@ -302,20 +344,26 @@ export type LoanReminderUncheckedCreateInput = {
 
 export type LoanReminderUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  loan?: Prisma.LoanUpdateOneRequiredWithoutReminderNestedInput
+  loan?: Prisma.LoanUpdateOneRequiredWithoutRemindersNestedInput
 }
 
 export type LoanReminderUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -327,7 +375,10 @@ export type LoanReminderUncheckedUpdateInput = {
 export type LoanReminderCreateManyInput = {
   id?: string
   loanId: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
   scheduledDate: Date | string
   status?: $Enums.ReminderStatus
   sentAt?: Date | string | null
@@ -338,7 +389,10 @@ export type LoanReminderCreateManyInput = {
 
 export type LoanReminderUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -350,7 +404,10 @@ export type LoanReminderUpdateManyMutationInput = {
 export type LoanReminderUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   loanId?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -362,6 +419,9 @@ export type LoanReminderUncheckedUpdateManyInput = {
 export type LoanReminderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  channel?: Prisma.SortOrder
+  message?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   scheduledDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -374,6 +434,9 @@ export type LoanReminderCountOrderByAggregateInput = {
 export type LoanReminderMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  channel?: Prisma.SortOrder
+  message?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   scheduledDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -386,6 +449,9 @@ export type LoanReminderMaxOrderByAggregateInput = {
 export type LoanReminderMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   loanId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  channel?: Prisma.SortOrder
+  message?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   scheduledDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -395,17 +461,34 @@ export type LoanReminderMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type LoanReminderNullableScalarRelationFilter = {
-  is?: Prisma.LoanReminderWhereInput | null
-  isNot?: Prisma.LoanReminderWhereInput | null
+export type LoanReminderListRelationFilter = {
+  every?: Prisma.LoanReminderWhereInput
+  some?: Prisma.LoanReminderWhereInput
+  none?: Prisma.LoanReminderWhereInput
+}
+
+export type LoanReminderOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type EnumReminderModeFieldUpdateOperationsInput = {
-  set?: $Enums.ReminderMode
+export type EnumReminderTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ReminderType
+}
+
+export type EnumReminderChannelFieldUpdateOperationsInput = {
+  set?: $Enums.ReminderChannel
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableEnumReminderModeFieldUpdateOperationsInput = {
+  set?: $Enums.ReminderMode | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -420,45 +503,54 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type LoanReminderCreateNestedManyWithoutLoanInput = {
+  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput> | Prisma.LoanReminderCreateWithoutLoanInput[] | Prisma.LoanReminderUncheckedCreateWithoutLoanInput[]
+  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput | Prisma.LoanReminderCreateOrConnectWithoutLoanInput[]
+  createMany?: Prisma.LoanReminderCreateManyLoanInputEnvelope
+  connect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
 }
 
-export type LoanReminderCreateNestedOneWithoutLoanInput = {
-  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
-  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput
-  connect?: Prisma.LoanReminderWhereUniqueInput
+export type LoanReminderUncheckedCreateNestedManyWithoutLoanInput = {
+  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput> | Prisma.LoanReminderCreateWithoutLoanInput[] | Prisma.LoanReminderUncheckedCreateWithoutLoanInput[]
+  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput | Prisma.LoanReminderCreateOrConnectWithoutLoanInput[]
+  createMany?: Prisma.LoanReminderCreateManyLoanInputEnvelope
+  connect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
 }
 
-export type LoanReminderUncheckedCreateNestedOneWithoutLoanInput = {
-  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
-  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput
-  connect?: Prisma.LoanReminderWhereUniqueInput
+export type LoanReminderUpdateManyWithoutLoanNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput> | Prisma.LoanReminderCreateWithoutLoanInput[] | Prisma.LoanReminderUncheckedCreateWithoutLoanInput[]
+  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput | Prisma.LoanReminderCreateOrConnectWithoutLoanInput[]
+  upsert?: Prisma.LoanReminderUpsertWithWhereUniqueWithoutLoanInput | Prisma.LoanReminderUpsertWithWhereUniqueWithoutLoanInput[]
+  createMany?: Prisma.LoanReminderCreateManyLoanInputEnvelope
+  set?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  disconnect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  delete?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  connect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  update?: Prisma.LoanReminderUpdateWithWhereUniqueWithoutLoanInput | Prisma.LoanReminderUpdateWithWhereUniqueWithoutLoanInput[]
+  updateMany?: Prisma.LoanReminderUpdateManyWithWhereWithoutLoanInput | Prisma.LoanReminderUpdateManyWithWhereWithoutLoanInput[]
+  deleteMany?: Prisma.LoanReminderScalarWhereInput | Prisma.LoanReminderScalarWhereInput[]
 }
 
-export type LoanReminderUpdateOneWithoutLoanNestedInput = {
-  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
-  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput
-  upsert?: Prisma.LoanReminderUpsertWithoutLoanInput
-  disconnect?: Prisma.LoanReminderWhereInput | boolean
-  delete?: Prisma.LoanReminderWhereInput | boolean
-  connect?: Prisma.LoanReminderWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.LoanReminderUpdateToOneWithWhereWithoutLoanInput, Prisma.LoanReminderUpdateWithoutLoanInput>, Prisma.LoanReminderUncheckedUpdateWithoutLoanInput>
-}
-
-export type LoanReminderUncheckedUpdateOneWithoutLoanNestedInput = {
-  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
-  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput
-  upsert?: Prisma.LoanReminderUpsertWithoutLoanInput
-  disconnect?: Prisma.LoanReminderWhereInput | boolean
-  delete?: Prisma.LoanReminderWhereInput | boolean
-  connect?: Prisma.LoanReminderWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.LoanReminderUpdateToOneWithWhereWithoutLoanInput, Prisma.LoanReminderUpdateWithoutLoanInput>, Prisma.LoanReminderUncheckedUpdateWithoutLoanInput>
+export type LoanReminderUncheckedUpdateManyWithoutLoanNestedInput = {
+  create?: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput> | Prisma.LoanReminderCreateWithoutLoanInput[] | Prisma.LoanReminderUncheckedCreateWithoutLoanInput[]
+  connectOrCreate?: Prisma.LoanReminderCreateOrConnectWithoutLoanInput | Prisma.LoanReminderCreateOrConnectWithoutLoanInput[]
+  upsert?: Prisma.LoanReminderUpsertWithWhereUniqueWithoutLoanInput | Prisma.LoanReminderUpsertWithWhereUniqueWithoutLoanInput[]
+  createMany?: Prisma.LoanReminderCreateManyLoanInputEnvelope
+  set?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  disconnect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  delete?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  connect?: Prisma.LoanReminderWhereUniqueInput | Prisma.LoanReminderWhereUniqueInput[]
+  update?: Prisma.LoanReminderUpdateWithWhereUniqueWithoutLoanInput | Prisma.LoanReminderUpdateWithWhereUniqueWithoutLoanInput[]
+  updateMany?: Prisma.LoanReminderUpdateManyWithWhereWithoutLoanInput | Prisma.LoanReminderUpdateManyWithWhereWithoutLoanInput[]
+  deleteMany?: Prisma.LoanReminderScalarWhereInput | Prisma.LoanReminderScalarWhereInput[]
 }
 
 export type LoanReminderCreateWithoutLoanInput = {
   id?: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
   scheduledDate: Date | string
   status?: $Enums.ReminderStatus
   sentAt?: Date | string | null
@@ -469,7 +561,10 @@ export type LoanReminderCreateWithoutLoanInput = {
 
 export type LoanReminderUncheckedCreateWithoutLoanInput = {
   id?: string
-  mode: $Enums.ReminderMode
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
   scheduledDate: Date | string
   status?: $Enums.ReminderStatus
   sentAt?: Date | string | null
@@ -483,20 +578,65 @@ export type LoanReminderCreateOrConnectWithoutLoanInput = {
   create: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
 }
 
-export type LoanReminderUpsertWithoutLoanInput = {
-  update: Prisma.XOR<Prisma.LoanReminderUpdateWithoutLoanInput, Prisma.LoanReminderUncheckedUpdateWithoutLoanInput>
-  create: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
-  where?: Prisma.LoanReminderWhereInput
+export type LoanReminderCreateManyLoanInputEnvelope = {
+  data: Prisma.LoanReminderCreateManyLoanInput | Prisma.LoanReminderCreateManyLoanInput[]
+  skipDuplicates?: boolean
 }
 
-export type LoanReminderUpdateToOneWithWhereWithoutLoanInput = {
-  where?: Prisma.LoanReminderWhereInput
+export type LoanReminderUpsertWithWhereUniqueWithoutLoanInput = {
+  where: Prisma.LoanReminderWhereUniqueInput
+  update: Prisma.XOR<Prisma.LoanReminderUpdateWithoutLoanInput, Prisma.LoanReminderUncheckedUpdateWithoutLoanInput>
+  create: Prisma.XOR<Prisma.LoanReminderCreateWithoutLoanInput, Prisma.LoanReminderUncheckedCreateWithoutLoanInput>
+}
+
+export type LoanReminderUpdateWithWhereUniqueWithoutLoanInput = {
+  where: Prisma.LoanReminderWhereUniqueInput
   data: Prisma.XOR<Prisma.LoanReminderUpdateWithoutLoanInput, Prisma.LoanReminderUncheckedUpdateWithoutLoanInput>
+}
+
+export type LoanReminderUpdateManyWithWhereWithoutLoanInput = {
+  where: Prisma.LoanReminderScalarWhereInput
+  data: Prisma.XOR<Prisma.LoanReminderUpdateManyMutationInput, Prisma.LoanReminderUncheckedUpdateManyWithoutLoanInput>
+}
+
+export type LoanReminderScalarWhereInput = {
+  AND?: Prisma.LoanReminderScalarWhereInput | Prisma.LoanReminderScalarWhereInput[]
+  OR?: Prisma.LoanReminderScalarWhereInput[]
+  NOT?: Prisma.LoanReminderScalarWhereInput | Prisma.LoanReminderScalarWhereInput[]
+  id?: Prisma.StringFilter<"LoanReminder"> | string
+  loanId?: Prisma.StringFilter<"LoanReminder"> | string
+  type?: Prisma.EnumReminderTypeFilter<"LoanReminder"> | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFilter<"LoanReminder"> | $Enums.ReminderChannel
+  message?: Prisma.StringNullableFilter<"LoanReminder"> | string | null
+  mode?: Prisma.EnumReminderModeNullableFilter<"LoanReminder"> | $Enums.ReminderMode | null
+  scheduledDate?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
+  status?: Prisma.EnumReminderStatusFilter<"LoanReminder"> | $Enums.ReminderStatus
+  sentAt?: Prisma.DateTimeNullableFilter<"LoanReminder"> | Date | string | null
+  errorDetails?: Prisma.StringNullableFilter<"LoanReminder"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"LoanReminder"> | Date | string
+}
+
+export type LoanReminderCreateManyLoanInput = {
+  id?: string
+  type: $Enums.ReminderType
+  channel: $Enums.ReminderChannel
+  message?: string | null
+  mode?: $Enums.ReminderMode | null
+  scheduledDate: Date | string
+  status?: $Enums.ReminderStatus
+  sentAt?: Date | string | null
+  errorDetails?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type LoanReminderUpdateWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -507,7 +647,24 @@ export type LoanReminderUpdateWithoutLoanInput = {
 
 export type LoanReminderUncheckedUpdateWithoutLoanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  mode?: Prisma.EnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
+  scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
+  sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorDetails?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type LoanReminderUncheckedUpdateManyWithoutLoanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumReminderTypeFieldUpdateOperationsInput | $Enums.ReminderType
+  channel?: Prisma.EnumReminderChannelFieldUpdateOperationsInput | $Enums.ReminderChannel
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mode?: Prisma.NullableEnumReminderModeFieldUpdateOperationsInput | $Enums.ReminderMode | null
   scheduledDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReminderStatusFieldUpdateOperationsInput | $Enums.ReminderStatus
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -521,6 +678,9 @@ export type LoanReminderUncheckedUpdateWithoutLoanInput = {
 export type LoanReminderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   loanId?: boolean
+  type?: boolean
+  channel?: boolean
+  message?: boolean
   mode?: boolean
   scheduledDate?: boolean
   status?: boolean
@@ -534,6 +694,9 @@ export type LoanReminderSelect<ExtArgs extends runtime.Types.Extensions.Internal
 export type LoanReminderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   loanId?: boolean
+  type?: boolean
+  channel?: boolean
+  message?: boolean
   mode?: boolean
   scheduledDate?: boolean
   status?: boolean
@@ -547,6 +710,9 @@ export type LoanReminderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
 export type LoanReminderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   loanId?: boolean
+  type?: boolean
+  channel?: boolean
+  message?: boolean
   mode?: boolean
   scheduledDate?: boolean
   status?: boolean
@@ -560,6 +726,9 @@ export type LoanReminderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
 export type LoanReminderSelectScalar = {
   id?: boolean
   loanId?: boolean
+  type?: boolean
+  channel?: boolean
+  message?: boolean
   mode?: boolean
   scheduledDate?: boolean
   status?: boolean
@@ -569,7 +738,7 @@ export type LoanReminderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type LoanReminderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "loanId" | "mode" | "scheduledDate" | "status" | "sentAt" | "errorDetails" | "createdAt" | "updatedAt", ExtArgs["result"]["loanReminder"]>
+export type LoanReminderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "loanId" | "type" | "channel" | "message" | "mode" | "scheduledDate" | "status" | "sentAt" | "errorDetails" | "createdAt" | "updatedAt", ExtArgs["result"]["loanReminder"]>
 export type LoanReminderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   loan?: boolean | Prisma.LoanDefaultArgs<ExtArgs>
 }
@@ -588,7 +757,10 @@ export type $LoanReminderPayload<ExtArgs extends runtime.Types.Extensions.Intern
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     loanId: string
-    mode: $Enums.ReminderMode
+    type: $Enums.ReminderType
+    channel: $Enums.ReminderChannel
+    message: string | null
+    mode: $Enums.ReminderMode | null
     scheduledDate: Date
     status: $Enums.ReminderStatus
     sentAt: Date | null
@@ -1021,6 +1193,9 @@ export interface Prisma__LoanReminderClient<T, Null = never, ExtArgs extends run
 export interface LoanReminderFieldRefs {
   readonly id: Prisma.FieldRef<"LoanReminder", 'String'>
   readonly loanId: Prisma.FieldRef<"LoanReminder", 'String'>
+  readonly type: Prisma.FieldRef<"LoanReminder", 'ReminderType'>
+  readonly channel: Prisma.FieldRef<"LoanReminder", 'ReminderChannel'>
+  readonly message: Prisma.FieldRef<"LoanReminder", 'String'>
   readonly mode: Prisma.FieldRef<"LoanReminder", 'ReminderMode'>
   readonly scheduledDate: Prisma.FieldRef<"LoanReminder", 'DateTime'>
   readonly status: Prisma.FieldRef<"LoanReminder", 'ReminderStatus'>
