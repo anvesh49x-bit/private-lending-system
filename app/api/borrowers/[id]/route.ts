@@ -138,36 +138,56 @@ export async function DELETE(
     }
 
     await prisma.$transaction(async (tx) => {
-      // 1. Delete excess balances
+      const loans = await tx.loan.findMany({ where: { borrowerId: id }, select: { id: true } });
+      const loanIds = loans.map(l => l.id);
+      
+      const payments = await tx.payment.findMany({ where: { borrowerId: id }, select: { id: true } });
+      const paymentIds = payments.map(p => p.id);
+
+      // 1. Delete excess balances by borrower OR by payment
       await tx.excessBalance.deleteMany({
-        where: { borrowerId: id }
+        where: {
+          OR: [
+            { borrowerId: id },
+            ...(paymentIds.length > 0 ? [{ paymentId: { in: paymentIds } }] : [])
+          ]
+        }
       });
 
-      // 2. Delete payment allocations (since payments and loans are being deleted, we must clear these first)
-      // We can get all payments for this borrower and delete their allocations
-      const payments = await tx.payment.findMany({
-        where: { borrowerId: id },
-        select: { id: true }
-      });
-      const paymentIds = payments.map(p => p.id);
-      
-      if (paymentIds.length > 0) {
+      // 2. Delete payment allocations by payment OR by loan
+      if (paymentIds.length > 0 || loanIds.length > 0) {
         await tx.paymentAllocation.deleteMany({
-          where: { paymentId: { in: paymentIds } }
+          where: {
+            OR: [
+              ...(paymentIds.length > 0 ? [{ paymentId: { in: paymentIds } }] : []),
+              ...(loanIds.length > 0 ? [{ loanId: { in: loanIds } }] : [])
+            ]
+          }
         });
       }
 
-      // 3. Delete payments
-      await tx.payment.deleteMany({
-        where: { borrowerId: id }
-      });
+      // 3. Delete loan reminders (just in case cascade doesn't work)
+      if (loanIds.length > 0) {
+        await tx.loanReminder.deleteMany({
+          where: { loanId: { in: loanIds } }
+        });
+      }
 
-      // 4. Delete loans
-      await tx.loan.deleteMany({
-        where: { borrowerId: id }
-      });
+      // 4. Delete payments
+      if (paymentIds.length > 0) {
+        await tx.payment.deleteMany({
+          where: { borrowerId: id }
+        });
+      }
 
-      // 5. Delete the borrower
+      // 5. Delete loans
+      if (loanIds.length > 0) {
+        await tx.loan.deleteMany({
+          where: { borrowerId: id }
+        });
+      }
+
+      // 6. Delete the borrower
       await tx.borrower.delete({
         where: { id }
       });
