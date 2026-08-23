@@ -104,7 +104,11 @@ export default function NewBorrowerPage() {
           try {
             setError("");
             setIsSubmitting(true);
-            await createBorrowerWithLoan(formData);
+            const result = await createBorrowerWithLoan(formData);
+            if (result?.error) {
+              setError(result.error);
+              setIsSubmitting(false);
+            }
           } catch (err: any) {
             setError(err.message || "Failed to create borrower. Please try again.");
             setIsSubmitting(false);

@@ -48,37 +48,37 @@ export async function createBorrowerWithLoan(
   );
 
   if (!fullName || !phone) {
-    throw new Error(
-      "Borrower name and phone number are required."
-    );
+    return {
+      error: "Borrower name and phone number are required."
+    };
   }
 
   if (
     !Number.isFinite(principalAmount) ||
     principalAmount <= 0
   ) {
-    throw new Error(
-      "Principal amount must be greater than zero."
-    );
+    return {
+      error: "Principal amount must be greater than zero."
+    };
   }
 
   if (
     !Number.isFinite(interestRate) ||
     interestRate < 0
   ) {
-    throw new Error(
-      "Enter a valid interest rate."
-    );
+    return {
+      error: "Enter a valid interest rate."
+    };
   }
 
   if (!startDateValue) {
-    throw new Error(
-      "Loan start date is required."
-    );
+    return {
+      error: "Loan start date is required."
+    };
   }
 
   if (interestFrequency === "CUSTOM_DATE_RANGE" && !endDateValue) {
-    throw new Error("End date is required for custom date range loans.");
+    return { error: "End date is required for custom date range loans." };
   }
 
   let borrower;
@@ -124,9 +124,10 @@ export async function createBorrowerWithLoan(
     });
   } catch (error: any) {
     if (error?.code === "P2002") {
-      throw new Error(`A borrower with the phone number ${phone} already exists.`);
+      return { error: `A borrower with the phone number ${phone} already exists.` };
     }
-    throw error;
+    console.error("Database error creating borrower:", error);
+    return { error: "An unexpected error occurred while saving to the database." };
   }
 
   redirect(`/borrowers/${borrower.id}`);
