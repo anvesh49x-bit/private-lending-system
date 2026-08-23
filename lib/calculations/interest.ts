@@ -126,24 +126,12 @@ export function calculateEstimatedInterest({
   }
 
   /*
-   * If endDate is null:
-   * calculate from start date until today.
-   *
-   * If endDate exists:
-   * never calculate beyond that configured end date.
+   * We calculate from start date until today (calculationDate).
+   * Interest accrues day by day automatically.
    */
+  // We removed the cap at endDate.
+  // Interest will continue to accrue day by day automatically until the loan is fully paid off.
   let calculationEnd = new Date(calculationDate);
-
-  if (endDate) {
-    const configuredEnd = new Date(endDate);
-
-    if (
-      !Number.isNaN(configuredEnd.getTime()) &&
-      configuredEnd.getTime() < calculationEnd.getTime()
-    ) {
-      calculationEnd = configuredEnd;
-    }
-  }
 
   const daysElapsed = getDaysBetween(start, calculationEnd);
 
