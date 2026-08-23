@@ -204,40 +204,32 @@ export default async function DashboardPage() {
               
               {/* TOP SUMMARY */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                    Total Principal Lent
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
-                    {formatCurrency(data.overview.totalPrincipalLent)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-green-700">
-                    Total Received
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-green-700">
-                    {formatCurrency(data.overview.totalReceived)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-6 shadow-sm sm:row-span-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-red-600">
-                    Total Outstanding
-                  </p>
-                  <p className="mt-4 text-4xl font-bold tracking-tight text-red-700 break-words">
-                    {formatCurrency(data.overview.totalOutstanding)}
-                  </p>
-                  
-                  <div className="mt-6 flex flex-col gap-4 border-t border-red-200/60 pt-6">
+                <div className="rounded-3xl border border-zinc-200 bg-gradient-to-br from-zinc-900 to-black p-8 text-white shadow-xl sm:p-10 sm:col-span-3">
+                  <h2 className="text-2xl font-bold tracking-tight">Business Position</h2>
+                  <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <div>
-                      <p className="text-xs font-medium text-red-600/80 uppercase tracking-wider">Principal Remaining</p>
-                      <p className="mt-1 text-lg font-semibold text-red-700">{formatCurrency(data.overview.principalRemaining)}</p>
+                      <p className="text-sm font-medium text-zinc-400">Capital Lent</p>
+                      <p className="mt-1 text-2xl font-semibold">{formatCurrency(data.overview.totalPrincipalLent)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-red-600/80 uppercase tracking-wider">Interest Remaining</p>
-                      <p className="mt-1 text-lg font-semibold text-red-700">{formatCurrency(data.overview.interestRemaining)}</p>
+                      <p className="text-sm font-medium text-zinc-400">Capital Recovered</p>
+                      <p className="mt-1 text-2xl font-semibold">{formatCurrency(data.overview.principalRecovered)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-zinc-400">Capital Still Outstanding</p>
+                      <p className="mt-1 text-2xl font-semibold text-red-400">{formatCurrency(data.overview.principalRemaining)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-zinc-400">Interest Income Collected</p>
+                      <p className="mt-1 text-2xl font-semibold text-green-400">{formatCurrency(data.overview.interestIncomeCollected)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-zinc-400">Interest Still Receivable</p>
+                      <p className="mt-1 text-2xl font-semibold">{formatCurrency(data.overview.interestRemaining)}</p>
+                    </div>
+                    <div className="border-t border-zinc-800 pt-4 sm:border-none sm:pt-0">
+                      <p className="text-sm font-medium text-zinc-400">Total Amount Currently Outstanding</p>
+                      <p className="mt-1 text-3xl font-bold text-white">{formatCurrency(data.overview.totalOutstanding)}</p>
                     </div>
                   </div>
                 </div>

@@ -101,6 +101,14 @@ export async function getDashboardData() {
       principalPaid,
     };
   });
+  let interestIncomeCollected = 0;
+  let principalRecovered = 0;
+  allLoans.forEach(loan => {
+    loan.allocations.forEach(alloc => {
+      interestIncomeCollected += Number(alloc.interestAmount);
+      principalRecovered += Number(alloc.principalAmount);
+    });
+  });
 
   return {
     overview: {
@@ -112,6 +120,8 @@ export async function getDashboardData() {
       interestRemaining: metrics.totalInterestRemaining,
       activeLoansCount: metrics.activeLoansCount,
       closedLoansCount: metrics.closedLoansCount,
+      principalRecovered,
+      interestIncomeCollected,
     },
     topActiveLoans,
     recentPayments: formattedRecentPayments,
